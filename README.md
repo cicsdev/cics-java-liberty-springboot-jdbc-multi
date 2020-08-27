@@ -1,6 +1,6 @@
-# cics-java-liberty-springboot-jdbc
+# cics-java-liberty-springboot-jdbc-multi
 
-This project demonstrates a Spring Boot JDBC application integrated with IBM CICS that can be deployed to a CICS Liberty JVM server. The application makes use of the employee sample table supplied with Db2 for z/OS. The application allows you to add, update, delete or display employee information from the table EMP. The sample also provides a set of Gradle and Maven build files for use either in Eclipse or standalone build environments.
+This project demonstrates a Spring Boot JDBC application with multiple DataSources that can be deployed to an IBM CICS Liberty JVM server. The application makes use of the employee sample table supplied with Db2 for z/OS. The application allows you to add, update, delete or display employee information from the table EMP. The sample also provides a set of Gradle and Maven build files for use either in Eclipse or standalone build environments.
 
 ## Requirements
 

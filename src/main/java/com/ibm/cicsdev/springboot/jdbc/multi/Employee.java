@@ -8,7 +8,7 @@
 /* restricted by GSA ADP Schedule Contract with IBM Corp                  */
 /*                                                                        */
 
-package com.ibm.cicsdev.springboot.jdbc;
+package com.ibm.cicsdev.springboot.jdbc.multi;
 
 import java.sql.Date;
 

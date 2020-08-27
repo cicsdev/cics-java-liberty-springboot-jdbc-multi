@@ -8,13 +8,14 @@
 /* restricted by GSA ADP Schedule Contract with IBM Corp                  */
 /*                                                                        */
 
-package com.ibm.cicsdev.springboot.jdbc;
+package com.ibm.cicsdev.springboot.jdbc.multi;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -34,7 +35,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmployeeRestController
 {	
 	@Autowired  
-	private EmployeeService employeeService;
+	private T4EmployeeService type4EmployeeService;
+	
+	@Autowired  
+	private T2EmployeeService type2EmployeeService;
 
 	
 	/**
@@ -50,84 +54,107 @@ public class EmployeeRestController
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss.SSSSSS");
 		String myDateString = sdf.format(myDate);
 		
-		return "<h1>Spring Boot JDBC Employee REST sample. Date/Time: " + myDateString + "</h1>"
+		return "<h1>Spring Boot JDBC Employee REST sample (Multiple DataSources). Date/Time: " + myDateString + "</h1>"
 		+ "<h3>Usage:</h3>"
-		+ "<b>/allRows</b> - return a list of employees using a classic SELECT statement<br>"
-		+ "<b>/oneEmployee/{empno}</b> - a list of employee records for the employee number provided<br>"
-		+ "<b>/addEmployee/{firstName}/{lastName}</b> - add an employee<br>"				
-		+ "<b>/deleteEmployee/{empNo}</b> - delete an employee<br>"
-		+ "<b>/updateEmployee/{empNo}/{newSalary}</b> - update employee salary";
+		+ "<b>/type2/allEmployees</b> - return a list of employees using a classic SELECT statement<br>"
+		+ "<b>/type2/listEmployee/{empno}</b> - a list of employee records for the employee number provided<br>"
+		+ "<b>/type2/addEmployee/{firstName}/{lastName}</b> - add an employee<br>"				
+		+ "<b>/type2/deleteEmployee/{empNo}</b> - delete an employee<br>"
+		+ "<b>/type2/updateEmployee/{empNo}/{newSalary}</b> - update employee salary"
+		+ "<b>"
+		+ "<b>/type4/allEmployees</b> - return a list of employees using a classic SELECT statement<br>"
+		+ "<b>/type4/listEmployee/{empno}</b> - a list of employee records for the employee number provided<br>"
+		+ "<b>/type4/addEmployee/{firstName}/{lastName}</b> - add an employee<br>"				
+		+ "<b>/type4/deleteEmployee/{empNo}</b> - delete an employee<br>"
+		+ "<b>/type4/updateEmployee/{empNo}/{newSalary}</b> - update employee salary";
 	}
 
 	
 	/**
-	 *  example url http://<server>:<port>/allRows
+	 *  example url http://<server>:<port>/type2/allEmployees
 	 *  
 	 * @return a list of employees
 	 */
-	@GetMapping({"/allRows","/allRows/"})
-	public List<Employee> getAllRows() 
+	@GetMapping({"/type2/allEmployees","/type2/allEmployees/"})
+	public List<Employee> getAllEmployees() 
 	{
-		return employeeService.selectAll();
+		return type2EmployeeService.selectAll();
 	}
-	
+
 	
 	/**
-	 * example url http://<server>:<port>/oneEmployee/000100
+	 * example url http://<server>:<port>/type2/listEmployee/000100
 	 * 
 	 * @param empno - employee number
 	 * @return a list of employee records for the passed parameter number
 	 */
-	@GetMapping("/oneEmployee/{empno}")
-	public List<Employee> oneEmployee(@PathVariable String empno) 
+	@GetMapping("/type2/listEmployee/{empno}")
+	public List<Employee> listEmployee(@PathVariable String empno) 
 	{
-		return employeeService.selectWhereEmpno(empno);
+		return type2EmployeeService.selectWhereEmpno(empno);
 	}
 	
 	
 	/**
-	 *  example url http://<server>:<port>/addEmployee/Tony/Fitzgerald
+	 *  example url http://<server>:<port>/type2/addEmployee/Bugs/Bunny
 	 *  
 	 * @param firstName - employee first name
 	 * @param lastName - employee last name
 	 * @return a message indicating success or failure of the add operation
 	 */
-	@GetMapping("/addEmployee/{firstName}/{lastName}")
+	@GetMapping("/type2/addEmployee/{firstName}/{lastName}")
 	@ResponseBody
 	public String addEmp(@PathVariable String firstName , @PathVariable String lastName) 
 	{
-		String result = employeeService.addEmployee(firstName,lastName);
+		String result = type2EmployeeService.addEmployee(firstName,lastName);
 		return result;
 	}
-	
+
 	
 	/**
-	 *  example url http://<server>:<port>/deleteEmployee/368620
+	 *  example url http://<server>:<port>/type2/addEmployeeTx/Roger/Rabbit
+	 *  
+	 * @param firstName - employee first name
+	 * @param lastName - employee last name
+	 * @return a message indicating success or failure of the add operation
+	 */
+	@GetMapping("/type2/addEmployeeTx/{firstName}/{lastName}")
+	@ResponseBody
+	@Transactional
+	public String addEmpTx(@PathVariable String firstName , @PathVariable String lastName) 
+	{
+		String result = type2EmployeeService.addEmployee(firstName,lastName);
+		return result;
+	}
+
+		
+	/**
+	 *  example url http://<server>:<port>/type2/deleteEmployee/368620
 	 *  
 	 * @param empNo - employee number to be deleted
 	 * @return a message indicating success or failure of the delete operation
 	 */
-	@GetMapping("/deleteEmployee/{empNo}")
+	@GetMapping("/type2/deleteEmployee/{empNo}")
 	@ResponseBody
 	public String delEmployee(@PathVariable String empNo) 
 	{
-		String result = employeeService.deleteEmployee(empNo);
+		String result = type2EmployeeService.deleteEmployee(empNo);
 		return result;
 	}
 	
 	
 	/**
-	 * example url http://<server>:<port>/updateEmployee/368620/33333
+	 * example url http://<server>:<port>/type2/updateEmployee/368620/33333
 	 * 
 	 * @param empNo - employee number to be updated
 	 * @param newSalary - the new salary to be given to the employee
 	 * @return a message indicating success or failure of the update operation
 	 */
-	@GetMapping("/updateEmployee/{empNo}/{newSalary}")
+	@GetMapping("/type2/updateEmployee/{empNo}/{newSalary}")
 	@ResponseBody
 	public String updateEmp(@PathVariable String empNo, @PathVariable int newSalary) 
 	{
-		String result = employeeService.updateEmployee(newSalary, empNo);
+		String result = type2EmployeeService.updateEmployee(newSalary, empNo);
 		return result;
 	}
 	

@@ -8,15 +8,17 @@
 /* restricted by GSA ADP Schedule Contract with IBM Corp                  */
 /*                                                                        */
 
-package com.ibm.cicsdev.springboot.jdbc;
+package com.ibm.cicsdev.springboot.jdbc.multi;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service class which retrieves the data requested by the REST controller
@@ -27,15 +29,25 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
-public class EmployeeService 
+public class T2EmployeeService 
 {
-	// The autowired JbdcTemplate gets its data-source definition from application.properties by default	
+	// The autowired JbdcTemplate gets its data-source definition from application.properties by default
+	
 	@Autowired
-	private JdbcTemplate jdbcTemplate;	
+	@Qualifier("type2JdbcTemplate")
+	private JdbcTemplate jdbcTemplate;
 
 	private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd"); 
 	private LocalDateTime now = LocalDateTime.now();
 	
+	
+	// TODO autowire in a JdbcTemplate so we don't need T2 and T4 services?
+	/*
+	public  T2EmployeeService(JdbcTemplate jdbcTemplate)
+	{
+		this.jdbcTemplate = jdbcTemplate; 
+	}
+	*/
 	
 	/**
 	 * @return a list of employees
@@ -75,44 +87,6 @@ public class EmployeeService
 	}
 
 	
-	/**
-	 * @return a list of employees
-	 * @throws NamingException
-	 */
-	public List<Employee> selectAllUsingBeanDataSource()
-	{
-		/*
-		 * Select all rows from the emp table
-		 * 
-		 * Identical to preceding selectAll() method except that the 
-		 *   dataSource information comes injected Bean datasource2
-		 *   this will override the setting in the application.properties file
-		 */
-
-		//set up the select SQL
-		String sql = "SELECT * FROM emp";
-
-		//run the query
-		return jdbcTemplate.query(
-				sql,
-				(rs, rowNum) ->
-				new Employee(
-						rs.getString("EMPNO"),
-						rs.getString("FIRSTNME"),
-						rs.getString("MIDINIT"),
-						rs.getString("LASTNAME"),
-						rs.getString("WORKDEPT"),
-						rs.getString("PHONENO"),
-						rs.getDate("HIREDATE"),
-						rs.getString("JOB"),
-						rs.getInt("EDLEVEL"),
-						rs.getString("SEX"),
-						rs.getString("BIRTHDATE"),
-						rs.getLong("SALARY"),
-						rs.getLong("BONUS"),
-						rs.getLong("COMM")));
-	}
-
 	
 	/**
 	 * @param empNo
@@ -275,5 +249,8 @@ public class EmployeeService
 		
 		return "employee update failed try again";
 	}
+	
+	
+	      
 	
 }

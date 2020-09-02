@@ -35,12 +35,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmployeeRestController
 {	
 	@Autowired  
-	private T4EmployeeService type4EmployeeService;
+	private EmployeeService employeeService;
 	
-	@Autowired  
-	private T2EmployeeService type2EmployeeService;
-
-	
+		
 	/**
 	 * Simple endpoint - returns date and time - simple test of the application
 	 * 
@@ -55,106 +52,149 @@ public class EmployeeRestController
 		String myDateString = sdf.format(myDate);
 		
 		return "<h1>Spring Boot JDBC Employee REST sample (Multiple DataSources). Date/Time: " + myDateString + "</h1>"
-		+ "<h3>Usage:</h3>"
+		+ "<h3>Usage: http://<server>:<port>/application-root/...</h3>"
 		+ "<b>/type2/allEmployees</b> - return a list of employees using a classic SELECT statement<br>"
 		+ "<b>/type2/listEmployee/{empno}</b> - a list of employee records for the employee number provided<br>"
+		+ "<br> --- Update operations --- <br>"
 		+ "<b>/type2/addEmployee/{firstName}/{lastName}</b> - add an employee<br>"				
 		+ "<b>/type2/deleteEmployee/{empNo}</b> - delete an employee<br>"
 		+ "<b>/type2/updateEmployee/{empNo}/{newSalary}</b> - update employee salary"
+		+ "<br> --- Update operations within a Global (XA) Transaction --- <br>"
+		+ "<b>/type2/addEmployeeTx/{firstName}/{lastName}</b> - add an employee<br>"				
+		+ "<b>/type2/deleteEmployeeTx/{empNo}</b> - delete an employee<br>"
+		+ "<b>/type2/updateEmployeeTx/{empNo}/{newSalary}</b> - update employee salary"
 		+ "<b>"
 		+ "<b>/type4/allEmployees</b> - return a list of employees using a classic SELECT statement<br>"
 		+ "<b>/type4/listEmployee/{empno}</b> - a list of employee records for the employee number provided<br>"
+		+ "<br> --- Update operations --- <br>"
 		+ "<b>/type4/addEmployee/{firstName}/{lastName}</b> - add an employee<br>"				
 		+ "<b>/type4/deleteEmployee/{empNo}</b> - delete an employee<br>"
-		+ "<b>/type4/updateEmployee/{empNo}/{newSalary}</b> - update employee salary";
+		+ "<b>/type4/updateEmployee/{empNo}/{newSalary}</b> - update employee salary"
+		+ "<br> --- Update operations within a Global (XA) Transaction --- <br>"
+		+ "<b>/type4/addEmployeeTx/{firstName}/{lastName}</b> - add an employee<br>"				
+		+ "<b>/type4/deleteEmployeeTx/{empNo}</b> - delete an employee<br>"
+		+ "<b>/type4/updateEmployeeTx/{empNo}/{newSalary}</b> - update employee salary";
 	}
 
 	
 	/**
-	 *  example url http://<server>:<port>/type2/allEmployees
-	 *  
+	 * Show all Employees
+	 * 
 	 * @return a list of employees
 	 */
-	@GetMapping({"/type2/allEmployees","/type2/allEmployees/"})
-	public List<Employee> getAllEmployees() 
+	@GetMapping({"/{jdbcType}/allEmployees","/{jdbcType}/allEmployees/"})
+	public List<Employee> getAllEmployees(@PathVariable String jdbcType) 
 	{
-		return type2EmployeeService.selectAll();
+		return this.employeeService.selectAll(jdbcType);
 	}
 
 	
 	/**
-	 * example url http://<server>:<port>/type2/listEmployee/000100
+	 * List one Employee
 	 * 
 	 * @param empno - employee number
 	 * @return a list of employee records for the passed parameter number
 	 */
-	@GetMapping("/type2/listEmployee/{empno}")
-	public List<Employee> listEmployee(@PathVariable String empno) 
+	@GetMapping("/{jdbcType}/listEmployee/{empno}")
+	public List<Employee> listEmployee(@PathVariable String jdbcType, @PathVariable String empno) 
 	{
-		return type2EmployeeService.selectWhereEmpno(empno);
+		return this.employeeService.selectWhereEmpno(jdbcType, empno);
 	}
 	
 	
 	/**
-	 *  example url http://<server>:<port>/type2/addEmployee/Bugs/Bunny
-	 *  
+	 * Add an Employee
+	 * 
 	 * @param firstName - employee first name
 	 * @param lastName - employee last name
 	 * @return a message indicating success or failure of the add operation
 	 */
-	@GetMapping("/type2/addEmployee/{firstName}/{lastName}")
+	@GetMapping("/{jdbcType}/addEmployee/{firstName}/{lastName}")
 	@ResponseBody
-	public String addEmp(@PathVariable String firstName , @PathVariable String lastName) 
+	public String addEmp(@PathVariable String jdbcType, @PathVariable String firstName , @PathVariable String lastName) 
 	{
-		String result = type2EmployeeService.addEmployee(firstName,lastName);
+		String result = this.employeeService.addEmployee(jdbcType, firstName,lastName);
 		return result;
 	}
 
 	
-	/**
-	 *  example url http://<server>:<port>/type2/addEmployeeTx/Roger/Rabbit
-	 *  
+	/**  
+	 * Add an employee within a Global (XA) transaction
+	 * 
 	 * @param firstName - employee first name
 	 * @param lastName - employee last name
 	 * @return a message indicating success or failure of the add operation
 	 */
-	@GetMapping("/type2/addEmployeeTx/{firstName}/{lastName}")
+	@GetMapping("/{jdbcType}/addEmployeeTx/{firstName}/{lastName}")
 	@ResponseBody
 	@Transactional
-	public String addEmpTx(@PathVariable String firstName , @PathVariable String lastName) 
+	public String addEmpTx(@PathVariable String jdbcType, @PathVariable String firstName , @PathVariable String lastName) 
 	{
-		String result = type2EmployeeService.addEmployee(firstName,lastName);
+		String result = this.employeeService.addEmployee(jdbcType, firstName,lastName);
 		return result;
 	}
 
 		
 	/**
-	 *  example url http://<server>:<port>/type2/deleteEmployee/368620
+	 * Delete an Employee
 	 *  
 	 * @param empNo - employee number to be deleted
 	 * @return a message indicating success or failure of the delete operation
 	 */
-	@GetMapping("/type2/deleteEmployee/{empNo}")
-	@ResponseBody
-	public String delEmployee(@PathVariable String empNo) 
+	@GetMapping("/{jdbcType}/deleteEmployee/{empNo}")
+	@ResponseBody	
+	public String delEmployee(@PathVariable String jdbcType, @PathVariable String empNo) 
 	{
-		String result = type2EmployeeService.deleteEmployee(empNo);
+		String result = this.employeeService.deleteEmployee(jdbcType, empNo);
 		return result;
 	}
 	
-	
+		
 	/**
-	 * example url http://<server>:<port>/type2/updateEmployee/368620/33333
+	 * Delete an Employee within a Global (XA) transaction
+	 *  
+	 * @param empNo - employee number to be deleted
+	 * @return a message indicating success or failure of the delete operation (XA)
+	 */
+	@GetMapping("/{jdbcType}/deleteEmployeeTx/{empNo}")
+	@ResponseBody
+	@Transactional
+	public String delEmployeeTx(@PathVariable String jdbcType, @PathVariable String empNo) 
+	{
+		String result = this.employeeService.deleteEmployee(jdbcType, empNo);
+		return result;
+	}
+
+		
+	/**
+	 * Update the salary of an Employee
 	 * 
 	 * @param empNo - employee number to be updated
 	 * @param newSalary - the new salary to be given to the employee
 	 * @return a message indicating success or failure of the update operation
 	 */
-	@GetMapping("/type2/updateEmployee/{empNo}/{newSalary}")
+	@GetMapping("/{jdbcType}/updateEmployee/{empNo}/{newSalary}")
 	@ResponseBody
-	public String updateEmp(@PathVariable String empNo, @PathVariable int newSalary) 
+	public String updateEmp(@PathVariable String jdbcType, @PathVariable String empNo, @PathVariable int newSalary) 
 	{
-		String result = type2EmployeeService.updateEmployee(newSalary, empNo);
+		String result = this.employeeService.updateEmployee(jdbcType, newSalary, empNo);
+		return result;
+	}
+	
+	
+	/**
+	 * Update the Salary of an Employee within a Global (XA) transaction
+	 * 
+	 * @param empNo - employee number to be updated
+	 * @param newSalary - the new salary to be given to the employee
+	 * @return a message indicating success or failure of the update operation (XA)
+	 */
+	@GetMapping("/{jdbcType}/updateEmployeeTx/{empNo}/{newSalary}")
+	@ResponseBody
+	@Transactional
+	public String updateEmpTx(@PathVariable String jdbcType, @PathVariable String empNo, @PathVariable int newSalary) 
+	{
+		String result = this.employeeService.updateEmployee(jdbcType, newSalary, empNo);
 		return result;
 	}
 	

@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -29,31 +30,47 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmployeeService 
 {
-	// The autowired JbdcTemplate gets its data-source definition from application.properties by default	
+	// The autowired JbdcTemplate gets its data-source definition URL from application.properties	
 	@Autowired
-	private JdbcTemplate jdbcTemplate;	
+	@Qualifier("type2JdbcTemplate")
+	private JdbcTemplate jdbcTemplateT2;
+	
+	@Autowired
+	@Qualifier("type4JdbcTemplate")
+	private JdbcTemplate jdbcTemplateT4;
+		
 
+	// Create a timestamp (used when adding an Employee)
 	private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd"); 
 	private LocalDateTime now = LocalDateTime.now();
 	
 	
+	private JdbcTemplate selectJdbcTemplate(String jdbcType)
+	{
+		if(jdbcType.equalsIgnoreCase("type2"))
+		{
+			return jdbcTemplateT2;
+		}
+		
+		return jdbcTemplateT4;
+	}
+	
+	
+	
 	/**
+	 * Select all rows from the Employee table
+	 * 
 	 * @return a list of employees
 	 * @throws NamingException
 	 */
-	public List<Employee> selectAll() 
+	public List<Employee> selectAll(String jdbcType) 
 	{
-		/*
-		 * Select all rows from the emp table
-		 * 
-		 *   datasource information comes from the application.properties file in the resources directory
-		 *   
-		 */
-
-		//setup the select SQL
+		JdbcTemplate jdbcTemplate = selectJdbcTemplate(jdbcType);
+		
+		// setup the select SQL
 		String sql = "SELECT * FROM emp";
 
-		//run the query
+		// run the query
 		return jdbcTemplate.query(
 				sql,
 				(rs, rowNum) ->
@@ -74,59 +91,15 @@ public class EmployeeService
 						rs.getLong("COMM")));
 	}
 
-	
-	/**
-	 * @return a list of employees
-	 * @throws NamingException
-	 */
-	public List<Employee> selectAllUsingBeanDataSource()
-	{
-		/*
-		 * Select all rows from the emp table
-		 * 
-		 * Identical to preceding selectAll() method except that the 
-		 *   dataSource information comes injected Bean datasource2
-		 *   this will override the setting in the application.properties file
-		 */
-
-		//set up the select SQL
-		String sql = "SELECT * FROM emp";
-
-		//run the query
-		return jdbcTemplate.query(
-				sql,
-				(rs, rowNum) ->
-				new Employee(
-						rs.getString("EMPNO"),
-						rs.getString("FIRSTNME"),
-						rs.getString("MIDINIT"),
-						rs.getString("LASTNAME"),
-						rs.getString("WORKDEPT"),
-						rs.getString("PHONENO"),
-						rs.getDate("HIREDATE"),
-						rs.getString("JOB"),
-						rs.getInt("EDLEVEL"),
-						rs.getString("SEX"),
-						rs.getString("BIRTHDATE"),
-						rs.getLong("SALARY"),
-						rs.getLong("BONUS"),
-						rs.getLong("COMM")));
-	}
-
-	
+		
 	/**
 	 * @param empNo
 	 * @return a list of employee records for a specific employee number
 	 */
-	public List<Employee> selectWhereEmpno(String empNo) 
+	public List<Employee> selectWhereEmpno(String jdbcType, String empNo) 
 	{
-		/*
-		 * Return all rows for a specific employee number
-		 * 
-		 *   datasource information comes from the application.properties file in the resources directory
-		 *   
-		 */
-
+		JdbcTemplate jdbcTemplate = selectJdbcTemplate(jdbcType);
+		
 		String sql = "SELECT * FROM emp where empno = ?";
 
 		return jdbcTemplate.query(
@@ -156,29 +129,23 @@ public class EmployeeService
 	 * @param lName - last name
 	 * @return a string indicating the result of the add operation
 	 */
-	public String addEmployee(String fName, String lName) 
+	public String addEmployee(String jdbcType, String fName, String lName) 
 	{
-		/*
-		 *  Add a new employee.
-		 *      Firstname and lastname are passed in 
-		 *      
-		 *      for demo purposes all the other fields are set by this method
-		 *      
-		 *  datasource information comes from the application.properties file in the resources directory
-		 *  
-		 */
-
-		//generate an empNo between 300000 and 999999
+		JdbcTemplate jdbcTemplate = selectJdbcTemplate(jdbcType);
+		
+		// Firstname and lastname are passed in by the REST caller,
+		// for demo purposes all the other fields are set by this method      	
+		 
+		// generate an empNo between 300000 and 999999
 		int max = 999999;
 		int min = 300000;
 		String empno = String.valueOf((int) Math.round((Math.random()*((max-min)+1))+min));
 
-		//for demo purposes hard code all the remaining fields (except first name and last name) 
 		String midInit = "A";
 		String workdept = "E21";
 		String phoneNo = "1234";
 
-		//get today's date and set as hiredate
+		// get today's date and set as hiredate
 		String hireDate= dtf.format(now);  
 
 		String job = "Engineer";
@@ -189,10 +156,10 @@ public class EmployeeService
 		long bonus= 1000;
 		long comm = 1000;
 
-		//setup the SQL
+		// setup the SQL
 		String sql = "insert into emp (EMPNO, FIRSTNME, MIDINIT,LASTNAME,WORKDEPT,PHONENO,HIREDATE,JOB,EDLEVEL,SEX,BIRTHDATE,SALARY,BONUS,COMM) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-		//do the insert
+		// do the insert
 		int numRows =  jdbcTemplate.update (sql,
 				empno,
 				fName,
@@ -209,7 +176,7 @@ public class EmployeeService
 				bonus,
 				comm);
 
-		//numRows is the number of rows inserted - will be zero if the insert fails
+		// numRows is the number of rows inserted - will be zero if the insert fails
 		if (numRows > 0) 
 		{
 			return "employee " + empno + " added";
@@ -223,21 +190,17 @@ public class EmployeeService
 	 * @param empNo - employee number to be deleted
 	 * @return - a message to indicate success or failure of the delete operation
 	 */
-	public String deleteEmployee(String empNo)
-	/*
-	 *  Delete an employee based on the empNo passed in
-	 *  
-	 *    dataSource information comes from the application.properties file in the resources directory
-	 *    
-	 */
+	public String deleteEmployee(String jdbcType, String empNo)
 	{
-		//set up the delete SQL
+		JdbcTemplate jdbcTemplate = selectJdbcTemplate(jdbcType);
+		
+		// set up the delete SQL
 		String sql = "DELETE FROM emp WHERE empno =?";
 
-		//do the delete
+		// do the delete
 		int numRows = jdbcTemplate.update(sql, empNo);
 
-		//numRows is the number of rows deleted - will be zero if the delete fails
+		// numRows is the number of rows deleted - will be zero if the delete fails
 		if (numRows > 0) 
 		{
 			return "employee " + empNo + " deleted";
@@ -252,22 +215,17 @@ public class EmployeeService
 	 * @param empNo - the employee number which is to be uodated
 	 * @return a message to indicate success or failure of the update operation
 	 */
-	public String updateEmployee(int newSalary, String empNo) 
+	public String updateEmployee(String jdbcType, int newSalary, String empNo) 
 	{
-		/*
-		 * Update a specified employee's salary based on the empNo passed to the salary passed in.
-		 * 
-		 *   datasource information comes from the application.properties file in the resources directory
-		 *   
-		 */
-
-		//set up the update SQL
+		JdbcTemplate jdbcTemplate = selectJdbcTemplate(jdbcType);
+		
+		// set up the update SQL
 		String sql = "update emp set salary =? where empNo = ?";
 
-		//do the update
+		// do the update
 		int numRows = jdbcTemplate.update(sql, newSalary, empNo);
 
-		//numRows is the number of rows updated - will be zero if the update fails   
+		// numRows is the number of rows updated - will be zero if the update fails   
 		if (numRows > 0) 
 		{
 			return "employee " + empNo + " salary changed to " + newSalary;

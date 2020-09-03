@@ -12,34 +12,17 @@
 
   <!-- Application properties -->
   <groupId>com.ibm.cicsdev.springboot</groupId>
-  <artifactId>cics-java-liberty-springboot-jdbc</artifactId>
+  <artifactId>cics-java-liberty-springboot-jdbc-multi</artifactId>
   <version>0.1.0</version>
-  <name>com-ibm-cicsdev-springboot-jdbc</name>
-  <description>Demo project for Spring Boot jdbc</description>
+  <name>com-ibm-cicsdev-springboot-jdbc-multi</name>
+  <description>Demo project for Spring Boot jdbc with multiple DataSources</description>
   <properties>
     <java.version>1.8</java.version>
   </properties>
    
-  <!-- CICS BOM (as of MAy 2020) -->
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.ibm.cics</groupId>
-        <artifactId>com.ibm.cics.ts.bom</artifactId>
-        <version>5.5-20200519131930-PH25409</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
+  
   <dependencies>
-    <!-- Compile against, but don't include JCICS in the final build (version and scope are from BOM) -->
-    <dependency>
-      <groupId>com.ibm.cics</groupId>
-      <artifactId>com.ibm.cics.server</artifactId>
-    </dependency>
-
+  
     <!-- Spring Boot web support -->   
     <dependency>
       <groupId>org.springframework.boot</groupId>

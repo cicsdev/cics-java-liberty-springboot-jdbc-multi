@@ -42,25 +42,27 @@ public class Application
 		SpringApplication.run(Application.class, args);
 	}
 	
-	// Helper Class to lookup our DataSources from JNDI (Liberty server.xml)
-	JndiDataSourceLookup dataSourceLookup = new JndiDataSourceLookup();
 	
-	// Custom values in application.properties that provide the JNDI DataSource URLs
+	// Custom values in application.properties that provide the different JNDI DataSource URLs
 	@Value("${spring.type2.datasource.jndi-name}")
 	private String type2JNDIName;
 	
 	@Value("${spring.type4.datasource.jndi-name}")
 	private String type4JNDIName;
+	
+	// Helper Class to lookup our DataSources from JNDI (Liberty server.xml)
+	JndiDataSourceLookup dataSourceLookup = new JndiDataSourceLookup();
+
 		
 	
-	// Method to create a DataSource object from the URL
+	// Method to create a DataSource Bean from the DataSource JNDI URL
 	@Bean
     public DataSource getDataSource(String jndiName) 
     {    	    			
     	return this.dataSourceLookup.getDataSource(jndiName);    	
     }
     
-    // JDBC Template for type 2 connectivity
+    // JDBC Template bean using DataSource for type 2 connectivity (native, DB2CONN)
     @Bean
     @Qualifier("type2JdbcTemplate")
     public JdbcTemplate getType2JdbcTemplate() 
@@ -68,12 +70,11 @@ public class Application
     	return new JdbcTemplate(getDataSource(this.type2JNDIName));
     }
 
-    // JDBC Template for type 4 connectivity
+    // JDBC Template bean using DataSource for type 4 connectivity (Java based, TCP/IP)
     @Bean
     @Qualifier("type4JdbcTemplate")
     public JdbcTemplate getType4JdbcTemplate() 
     {
     	return new JdbcTemplate(getDataSource(this.type4JNDIName));
-    }
-               
+    }               
 }

@@ -21,7 +21,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * Service class which retrieves the data requested by the REST controller
- *    makes use of jdbcTemplate to retrieve the data from table EMP
+ *    makes use of two different jdbcTemplates (DataSources with type 2 and type 4 connectivity) 
+ *    to retrieve the data from table EMP
  * 
  * @Autowired Marks a constructor, field, setter method, or config method as to be autowired by Spring's dependency injection facilities
  * @Service Marks a class as providing business logic
@@ -30,29 +31,30 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmployeeService 
 {
-	// The autowired JbdcTemplate gets its data-source definition URL from application.properties	
+	// The autowired JbdcTemplates are created from the Bean methods in Application.java
+	// The Qualifiers tell Spring which Bean to inject.
 	@Autowired
 	@Qualifier("type2JdbcTemplate")
 	private JdbcTemplate jdbcTemplateT2;
 	
 	@Autowired
 	@Qualifier("type4JdbcTemplate")
-	private JdbcTemplate jdbcTemplateT4;
-		
+	private JdbcTemplate jdbcTemplateT4;		
 
 	// Create a timestamp (used when adding an Employee)
 	private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd"); 
 	private LocalDateTime now = LocalDateTime.now();
 	
 	
+	// Based on the jdbcType string, select which jdbcTemplate to use
 	private JdbcTemplate selectJdbcTemplate(String jdbcType)
 	{
 		if(jdbcType.equalsIgnoreCase("type2"))
 		{
-			return jdbcTemplateT2;
+			return this.jdbcTemplateT2;
 		}
 		
-		return jdbcTemplateT4;
+		return this.jdbcTemplateT4;
 	}
 	
 	
@@ -65,6 +67,8 @@ public class EmployeeService
 	 */
 	public List<Employee> selectAll(String jdbcType) 
 	{
+		// The jdbcType (2 or 4) is provided in the URL from the user/browser.
+		// We map it to the template DataSource which provides that capability.
 		JdbcTemplate jdbcTemplate = selectJdbcTemplate(jdbcType);
 		
 		// setup the select SQL
@@ -146,7 +150,7 @@ public class EmployeeService
 		String phoneNo = "1234";
 
 		// get today's date and set as hiredate
-		String hireDate= dtf.format(now);  
+		String hireDate= this.dtf.format(this.now);  
 
 		String job = "Engineer";
 		int edLevel =3 ;

@@ -39,9 +39,9 @@ public class EmployeeRestController
 	
 		
 	/**
-	 * Simple endpoint - returns date and time - simple test of the application
+	 * Root endpoint
 	 * 
-	 * @return  a Hello message 
+	 * @return Date/time and usage information 
 	 */
 	@GetMapping("/")
 	@ResponseBody
@@ -63,7 +63,7 @@ public class EmployeeRestController
 		+ "<b>/type2/addEmployeeTx/{firstName}/{lastName}</b> - add an employee<br>"				
 		+ "<b>/type2/deleteEmployeeTx/{empNo}</b> - delete an employee<br>"
 		+ "<b>/type2/updateEmployeeTx/{empNo}/{newSalary}</b> - update employee salary"
-		+ "<b>"
+		+ "<br>"
 		+ "<b>/type4/allEmployees</b> - return a list of employees using a classic SELECT statement<br>"
 		+ "<b>/type4/listEmployee/{empno}</b> - a list of employee records for the employee number provided<br>"
 		+ "<br> --- Update operations --- <br>"
@@ -120,6 +120,7 @@ public class EmployeeRestController
 	
 	/**  
 	 * Add an employee within a Global (XA) transaction
+	 * Note the @Transactional annotation.
 	 * 
 	 * @param firstName - employee first name
 	 * @param lastName - employee last name
@@ -152,6 +153,7 @@ public class EmployeeRestController
 		
 	/**
 	 * Delete an Employee within a Global (XA) transaction
+	 * Note the @Transactional annotation.
 	 *  
 	 * @param empNo - employee number to be deleted
 	 * @return a message indicating success or failure of the delete operation (XA)
@@ -184,6 +186,7 @@ public class EmployeeRestController
 	
 	/**
 	 * Update the Salary of an Employee within a Global (XA) transaction
+	 * Note the @Transactional annotation.
 	 * 
 	 * @param empNo - employee number to be updated
 	 * @param newSalary - the new salary to be given to the employee

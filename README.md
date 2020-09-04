@@ -83,7 +83,7 @@ This creates a WAR file in the `target` directory.
 
 >**Note:** `servlet-4.0` will only work for CICS TS V5.5 or later
 
-- add the DataSource definitions to 'server.xml'.
+- add the dataSource definitions to 'server.xml'.
 
 E.g. JDBC type 2 connectivity (substitute your values as necessary):
 
@@ -121,14 +121,14 @@ E.g. JDBC type 2 connectivity (substitute your values as necessary):
 </dataSource>        
 ```
 
-- set the custom properties for both DataSources in the application.properties
+- set the custom properties for both dataSources in the application.properties
 
 The file application.properties in /src/main/resources/ contains the settings 
 ``` shell
 spring.type2.datasource.jndi-name=jdbc/t2DataSource
 spring.type4.datasource.jndi-name=jdbc/t4DataSource
 ```
-which will direct the application to the DataSource definitions in the server.xml which. They must have parameter jndiName set to the same value as specified in the application properties file
+which will direct the application to the dataSource definitions in the server.xml. They must have parameter jndiName set to the same value as specified in the application properties file.
 
 
 - Deployment option 1:
@@ -151,25 +151,28 @@ which will direct the application to the DataSource definitions in the server.xm
 ```
 
 ## Trying out the sample
-1. Ensure the web application started successfully in Liberty by checking for msg `CWWKT0016I` in the Liberty messages.log:
+
+1. Ensure you have a CICS DB2CONN resource installed and connected to your Db2 database. This resource is used by the DataSource configured for type 2 connectivity.
+
+2. Ensure the web application started successfully in Liberty by checking for msg `CWWKT0016I` in the Liberty messages.log:
     - `A CWWKT0016I: Web application available (default_host): http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc-multi-0.1.0`
     - `I SRVE0292I: Servlet Message - [com.ibm.cicsdev.springboot.jcics.multi-0.1.0]:.Initializing Spring embedded WebApplicationContext`
 
-2. Copy the context root from message CWWKT0016I along with the REST service suffix into you web browser. For example to display all the Employees from the EMP table using the DataSource with type 2 connectivity:
+3. Copy the context root from message CWWKT0016I along with the REST service suffix into you web browser. For example to display all the Employees from the EMP table using the DataSource with type 2 connectivity:
     - `http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc.multi-0.1.0/type2/allEmployees` 
 
    The browser will prompt for basic authentication. Enter a valid userid and password - according to the configured registry for your target Liberty JVM server.
    
-3. For more information on how to use this sample, request the context root:
+4. For more information on how to use this sample, request the context root:
    - `http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc.multi-0.1.0/`
      
     
-## Using Multiple DataSources
-By default the Spring JbdcTemplate will be autoconfigured to use a single DataSource. To connect to multiple DataSources requires a little more configuration. In the Application class you will see some fields and methods that provide customised DataSource objects that are based on the custom properties we placed in application.properties earlier. 
+## Using Multiple data sources
+By default the Spring JbdcTemplate will be autoconfigured to use a single data source. To connect to multiple data sources requires a little more configuration. In the Application class you will see some fields and methods that provide customised DataSource objects that are based on the custom properties we placed in application.properties earlier. 
 
 Note that to facilitate Autowiring, the getDataSource() method and the getJdbcTemplate() methods must all be annotated to generate beans. The JdbcTemplate bean methods are then referenced in the EmployeeService and autowired to create the two templates used in this demo. 
 
-The URL path provided on each request dictates whether we wish to run our database query using the DataSource with type 2 connectivity, or the DataSource with type 4 connectivity. For example:
+The URL path provided on each request dictates whether we wish to run our database query using the dataSource with type 2 connectivity, or the dataSource with type 4 connectivity. For example:
 
 - `http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc.multi-0.1.0/type4/addEmployee/Bertie/Banana` 
 
@@ -178,22 +181,39 @@ The URL path provided on each request dictates whether we wish to run our databa
 
 
 ## Additional notes on Transactional behaviour
-There are three types of Db2 DataSource definition that can be used in CICS Liberty, all use the Db2 JDBC driver (JCC). They are:
-- the original `cicsts_dataSource` using type 2 connectivity (DB2CONN) and supporting driver manager
-- a Liberty `dataSource` with type 2 connectivity (using CICS DB2CONN for connection management)
-- a Liberty `dataSource` with type 4 connectivity (using TCP/IP and Liberty for connection management)
+There are three types of Db2 dataSource definition that can be used in CICS Liberty, all use the same Db2 JDBC driver (JCC) but have slightly different transactional behaviours. They are as follows:
+- The original `cicsts_dataSource` using type 2 connectivity and a CICS DB2CONN resource.
+- A Liberty `dataSource` with type 2 connectivity and a CICS DB2CONN resource.
+- A Liberty `dataSource` with type 4 connectivity and using a remote TCP/IP connection managed by Liberty. 
 
-DataSources are defined in server.xml, and JNDI is used by this application to autowire to the specified DataSource given by the URL in `application.properties`.
+When using the default transactional scope of the CICS unit-of-work with a T2 Liberty JDBC connection you may notice that methods in the sample that perform database updates will rollback by default (and therefore also rollback the CICS UOW). This is because the JdbcTemplate **closes** connections after use. Closing a connection will cause the Liberty connection factory to *cleanup* outstanding requests **if** they are not autocommited or not in a global transaction. Since the default Liberty dataSource setting for the [`commitOrRollbackOnCleanup`](https://www.ibm.com/support/knowledgecenter/en/SS7K4U_liberty/com.ibm.websphere.liberty.autogen.zos.doc/ae/rwlp_config_dataSource.html) property is `rollback`, and autocommit is not supported for T2 connections in CICS, then requests to a T2 JDBC connection that use a Liberty dataSource will rollback by default.
 
-It is important to note that when the Db2 JDBC driver is operating in a CICS environment with type 2 connectivity, the autocommit property is <i>forced</i> to 'false' and by default the `commitOrRollbackOnCleanup` property is set to 'rollback'. Traditionally this has been because the driver defers to CICS UOW processing to demark transactions in a CICS application. Conversely, JDBC type 4 connectivity defaults to 'autocommit=true' as this is more standard in a distributed environment. Additionally the `commitOrRollbackOnCleanup` property does <b>not</b> apply if autocommit is on, AND autocommit does not apply if using a global txn.
+However, the same is not true of the cicsts_dataSource. It does not use the Liberty data source connection manager, so there is no opportunity for the Liberty cleanup behaviour to take effect. Instead it is the CICS UOW behaviour that is respected, which means an implicit commit at end of task.
 
-The differing values of these properties for different DataSource types, give rise to different transactional behaviour when used in CICS Liberty. For example, calling the `/type4/addEmployee` endpoint in this sample uses a Liberty DataSource with type 4 connectivity and will result in an automatic commit, the same call using a Liberty DataSource with type 2 connectivity will result in rollback, because autocommit=false (forced by JCC driver) and the clean-up behaviour (if there is no explicit transaction) is to rollback.
+By default, commit behaviour is also exhibited by T4 JDBC connections. T4 JDBC connections default to `autocommit=true`, and each JDBC request will be auto-committed after use. This will not syncpoint the CICS UOW as T4 JDBC connections are not part of the CICS UOW by default.
 
-For the `cicsts_dataSource` which also uses type 2 connectivity, the behaviour is similar to Liberty with type 4 connectivity but this DataSource implementation does not involve the Liberty transaction manager by default, and so the clean-up behaviour of Liberty DataSources does not apply. Thus when the transaction finishes, CICS will implicitly commit the UOW, and the database updates are committed. 
+The following table summarises the different behaviours for each type of dataSource.
 
-You can emulate the autocommit behaviour for a Liberty DataSource with type 2 connectivity by setting the `commitOrRollbackOnCleanUp` property to 'commit'. However, should the application then cause an exception or abend, the CICS UOW containing the Db2 update has already been committed and only a second new (empty) UOW is rolled back.
 
-Thus, for each update operation in this sample we provide a second end-point version (postfix 'Tx') which wraps the call in an XA (global) transaction and in all environments the behaviour remains fully transactional and consistent.
+|dataSource         |type     |autocommit    |autocommit default  |Default commit behaviour         |
+|-----------------  |---------|--------------|--------------------|---------------------------------|
+|cicsts_dataSource  |T2       |false         |false               |commit CICS UOW                  |
+|Liberty datasource |T2       |false         |false               |rollback CICS UOW                |
+|Liberty dataSource |T4       |true or false |true                |commit database update           |
+
+To avoid differences and provide consistent behaviour, a global transaction can be used to control the transactional scope of all updates. Our sample contains a set of transactional service endpoints, such as `/addEmployeeTx` that map to service methods that create a global transaction using the Spring `@Transactional` annotation, as shown below. This ensures all the work performed within the scope of that method is part of a single global transaction coordinated by Liberty. That work includes the CICS UOW, and any resources it controls, such as JDBC type 2 connections - as well as any requests to Liberty managed resources such as JDBC with type 4 connectivity.
+
+```java
+    @GetMapping("/addEmployeeTx/{firstName}/{lastName}")
+    @ResponseBody
+    @Transactional
+    public String addEmpTx(@PathVariable String firstName , @PathVariable String lastName) 
+    {
+        String result = employeeService.addEmployee(firstName,lastName);
+        return result;
+    }
+```
+
 You can observe the differences in behaviour by driving the different type2/type4 and local vs global transaction endpoints.
 
 

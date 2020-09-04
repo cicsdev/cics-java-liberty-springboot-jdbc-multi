@@ -52,17 +52,16 @@ public class Application
 	
 	// Helper Class to lookup our DataSources from JNDI (Liberty server.xml)
 	JndiDataSourceLookup dataSourceLookup = new JndiDataSourceLookup();
-
 		
 	
-	// Method to create a DataSource Bean from the DataSource JNDI URL
+	// Method to create a DataSource Bean from the dataSource JNDI URL
 	@Bean
     public DataSource getDataSource(String jndiName) 
     {    	    			
     	return this.dataSourceLookup.getDataSource(jndiName);    	
     }
     
-    // JDBC Template bean using DataSource for type 2 connectivity (native, DB2CONN)
+    // JDBC Template bean using dataSource for type 2 connectivity (native, DB2CONN)
     @Bean
     @Qualifier("type2JdbcTemplate")
     public JdbcTemplate getType2JdbcTemplate() 
@@ -70,7 +69,7 @@ public class Application
     	return new JdbcTemplate(getDataSource(this.type2JNDIName));
     }
 
-    // JDBC Template bean using DataSource for type 4 connectivity (Java based, TCP/IP)
+    // JDBC Template bean using dataSource for type 4 connectivity (Java based, TCP/IP)
     @Bean
     @Qualifier("type4JdbcTemplate")
     public JdbcTemplate getType4JdbcTemplate() 

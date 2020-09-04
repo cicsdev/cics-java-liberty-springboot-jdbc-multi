@@ -51,29 +51,19 @@ public class EmployeeRestController
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss.SSSSSS");
 		String myDateString = sdf.format(myDate);
 		
-		return "<h1>Spring Boot JDBC Employee REST sample (Multiple DataSources). Date/Time: " + myDateString + "</h1>"
-		+ "<h3>Usage: http://<server>:<port>/application-root/...</h3>"
-		+ "<b>/type2/allEmployees</b> - return a list of employees using a classic SELECT statement<br>"
-		+ "<b>/type2/listEmployee/{empno}</b> - a list of employee records for the employee number provided<br>"
+		return "<h1>Spring Boot JDBC Employee REST sample (Multiple DataSources).</h1><br>"
+		+ "Date/Time: " + myDateString + "<br>"
+		+ "<h3>Usage: .../type2|type4/{command} </h3>"
+		+ "<b>/{type}/allEmployees</b> - return a list of employees using a classic SELECT statement<br>"
+		+ "<b>/{type}/listEmployee/{empno}</b> - a list of employee records for the employee number provided<br>"
 		+ "<br> --- Update operations --- <br>"
-		+ "<b>/type2/addEmployee/{firstName}/{lastName}</b> - add an employee<br>"				
-		+ "<b>/type2/deleteEmployee/{empNo}</b> - delete an employee<br>"
-		+ "<b>/type2/updateEmployee/{empNo}/{newSalary}</b> - update employee salary"
+		+ "<b>/{type}/addEmployee/{firstName}/{lastName}</b> - add an employee<br>"				
+		+ "<b>/{type}/deleteEmployee/{empNo}</b> - delete an employee<br>"
+		+ "<b>/{type}/updateEmployee/{empNo}/{newSalary}</b> - update employee salary"
 		+ "<br> --- Update operations within a Global (XA) Transaction --- <br>"
-		+ "<b>/type2/addEmployeeTx/{firstName}/{lastName}</b> - add an employee<br>"				
-		+ "<b>/type2/deleteEmployeeTx/{empNo}</b> - delete an employee<br>"
-		+ "<b>/type2/updateEmployeeTx/{empNo}/{newSalary}</b> - update employee salary"
-		+ "<br>"
-		+ "<b>/type4/allEmployees</b> - return a list of employees using a classic SELECT statement<br>"
-		+ "<b>/type4/listEmployee/{empno}</b> - a list of employee records for the employee number provided<br>"
-		+ "<br> --- Update operations --- <br>"
-		+ "<b>/type4/addEmployee/{firstName}/{lastName}</b> - add an employee<br>"				
-		+ "<b>/type4/deleteEmployee/{empNo}</b> - delete an employee<br>"
-		+ "<b>/type4/updateEmployee/{empNo}/{newSalary}</b> - update employee salary"
-		+ "<br> --- Update operations within a Global (XA) Transaction --- <br>"
-		+ "<b>/type4/addEmployeeTx/{firstName}/{lastName}</b> - add an employee<br>"				
-		+ "<b>/type4/deleteEmployeeTx/{empNo}</b> - delete an employee<br>"
-		+ "<b>/type4/updateEmployeeTx/{empNo}/{newSalary}</b> - update employee salary";
+		+ "<b>/{type}/addEmployeeTx/{firstName}/{lastName}</b> - add an employee<br>"				
+		+ "<b>/{type}/deleteEmployeeTx/{empNo}</b> - delete an employee<br>"
+		+ "<b>/{type}/updateEmployeeTx/{empNo}/{newSalary}</b> - update employee salary";
 	}
 
 	

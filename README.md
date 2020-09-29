@@ -216,6 +216,5 @@ To avoid differences and provide consistent behaviour, a global transaction can 
 
 You can observe the differences in behaviour by driving the different type2/type4 and local vs global transaction endpoints.
 
-
-### License:
+## License
 This project is licensed under [Eclipse Public License - v 2.0](LICENSE). 

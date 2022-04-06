@@ -8,7 +8,7 @@ This project demonstrates a Spring Boot JDBC application using multiple DataSour
 * A configured Liberty JVM server
 * Java SE 1.8 or later on the z/OS system
 * Java SE 1.8 or later on the workstation
-* IBM Db2 V11 or later on z/OS
+* IBM Db2 V12 or later on z/OS
 * An Eclipse development environment on the workstation (optional)
 * Either Gradle or Apache Maven on the workstation (optional if using Wrappers)
 
@@ -91,8 +91,8 @@ E.g. JDBC type 2 connectivity (substitute your values as necessary):
 <dataSource id="t2_multi" jndiName="jdbc/t2DataSource" transactional="false">
         <jdbcDriver>   
             <library name="DB2LIB">
-                <fileset dir="/usr/lpp/db2v11/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
-                <fileset dir="/usr/lpp/db2v11/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
+                <fileset dir="/usr/lpp/db2v12/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
+                <fileset dir="/usr/lpp/db2v12/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
             </library>
         </jdbcDriver>
         <properties.db2.jcc currentSchema="YOUR_SCHEMA" driverType="2"/>
@@ -106,8 +106,8 @@ E.g. JDBC type 2 connectivity (substitute your values as necessary):
 <dataSource id="t4_multi" jndiName="jdbc/t4DataSource" type="javax.sql.XADataSource">
     <jdbcDriver>   
         <library name="DB2LIB">
-            <fileset dir="/usr/lpp/db2v11/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
-            <fileset dir="/usr/lpp/db2v11/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
+            <fileset dir="/usr/lpp/db2v12/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
+            <fileset dir="/usr/lpp/db2v12/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
         </library>
     </jdbcDriver>
     <properties.db2.jcc driverType="4" 

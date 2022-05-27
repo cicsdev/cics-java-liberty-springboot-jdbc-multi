@@ -121,16 +121,6 @@ E.g. JDBC type 2 connectivity (substitute your values as necessary):
 </dataSource>        
 ```
 
-- set the custom properties for both dataSources in the application.properties
-
-The file application.properties in /src/main/resources/ contains the settings 
-``` shell
-spring.type2.datasource.jndi-name=jdbc/t2DataSource
-spring.type4.datasource.jndi-name=jdbc/t4DataSource
-```
-which will direct the application to the dataSource definitions in the server.xml. They must have parameter jndiName set to the same value as specified in the application properties file.
-
-
 - Deployment option 1:
     - Copy and paste the built WAR from your *target* or *build/libs* directory into a Eclipse CICS bundle project and create a new WAR bundlepart that references the WAR file. Then deploy the CICS bundle project from CICS Explorer using the **Export Bundle Project to z/OS UNIX File System** wizard.
     
@@ -168,7 +158,6 @@ which will direct the application to the dataSource definitions in the server.xm
      
     
 ## Using Multiple data sources
-By default the Spring JbdcTemplate will be autoconfigured to use a single data source. To connect to multiple data sources requires a little more configuration. In the Application class you will see some fields and methods that provide customised DataSource objects that are based on the custom properties we placed in application.properties earlier. 
 
 Note that to facilitate Autowiring, the getDataSource() method and the getJdbcTemplate() methods must all be annotated to generate beans. The JdbcTemplate bean methods are then referenced in the EmployeeService and autowired to create the two templates used in this demo. 
 

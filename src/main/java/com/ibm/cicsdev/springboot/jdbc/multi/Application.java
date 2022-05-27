@@ -13,7 +13,6 @@ package com.ibm.cicsdev.springboot.jdbc.multi;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +33,10 @@ import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 @SpringBootApplication
 public class Application 
 {
+	// Helper Class to lookup our DataSources from JNDI (Liberty server.xml)
+	JndiDataSourceLookup dataSourceLookup = new JndiDataSourceLookup();
+		
+	
 	/**
 	 * @param args - inputs
 	 */
@@ -41,39 +44,41 @@ public class Application
 	{
 		SpringApplication.run(Application.class, args);
 	}
-	
-	
-	// Custom values in application.properties that provide the different JNDI DataSource URLs
-	@Value("${spring.type2.datasource.jndi-name}")
-	private String type2JNDIName;
-	
-	@Value("${spring.type4.datasource.jndi-name}")
-	private String type4JNDIName;
-	
-	// Helper Class to lookup our DataSources from JNDI (Liberty server.xml)
-	JndiDataSourceLookup dataSourceLookup = new JndiDataSourceLookup();
 		
 	
 	// Method to create a DataSource Bean from the dataSource JNDI URL
-	@Bean
-    public DataSource getDataSource(String jndiName) 
+	@Bean	
+    public DataSource getType2DataSource() 
     {    	    			
-    	return this.dataSourceLookup.getDataSource(jndiName);    	
+    	//return this.dataSourceLookup.getDataSource(type2JNDIName);    	
+    	return this.dataSourceLookup.getDataSource("jdbc/t2DataSource");
     }
+	
+	
+	// Method to create a DataSource Bean from the dataSource JNDI URL
+	@Bean	
+	public DataSource getType4DataSource() 
+	{    	    			
+	   	//return this.dataSourceLookup.getDataSource(type4JNDIName);    	
+	   	return this.dataSourceLookup.getDataSource("jdbc/t4DataSource");
+	}
     
+	
     // JDBC Template bean using dataSource for type 2 connectivity (native, DB2CONN)
     @Bean
     @Qualifier("type2JdbcTemplate")
     public JdbcTemplate getType2JdbcTemplate() 
     {
-    	return new JdbcTemplate(getDataSource(this.type2JNDIName));
+    	return new JdbcTemplate(getType2DataSource());
     }
 
+    
     // JDBC Template bean using dataSource for type 4 connectivity (Java based, TCP/IP)
-    @Bean
+    @Bean	    
     @Qualifier("type4JdbcTemplate")
     public JdbcTemplate getType4JdbcTemplate() 
     {
-    	return new JdbcTemplate(getDataSource(this.type4JNDIName));
-    }               
+    	return new JdbcTemplate(getType4DataSource());    	
+    }        
+
 }

@@ -1,0 +1,20 @@
+plugins
+{
+    id 'com.ibm.cics.bundle' version '1.0.8'
+}
+
+group = 'com.ibm.cicsdev.springboot'
+version = '1.0.0'
+
+dependencies
+{
+    cicsBundlePart project(path: ':cics-java-liberty-springboot-jdbc-multi-app', configuration: 'archives')
+}
+
+cicsBundle
+{
+    build
+    {
+        defaultJVMServer = project.findProperty("cics.jvmserver") ?: "DFHWLP"
+    }
+}

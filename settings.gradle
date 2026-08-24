@@ -1,1 +1,19 @@
-rootProject.name = 'com.ibm.cicsdev.springboot.jdbc.multi'
+// ============================================================================
+// Toolchain Configuration
+// ============================================================================
+// Configure toolchain resolver for auto-provisioning of JDKs
+plugins
+{
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+// ============================================================================
+// Root Project Configuration
+// ============================================================================
+rootProject.name = 'cics-java-liberty-springboot-jdbc-multi'
+
+// ============================================================================
+// Subprojects
+// ============================================================================
+include(':cics-java-liberty-springboot-jdbc-multi-app')
+include(':cics-java-liberty-springboot-jdbc-multi-cicsbundle')

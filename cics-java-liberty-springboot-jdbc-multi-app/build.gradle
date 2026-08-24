@@ -1,0 +1,70 @@
+plugins
+{
+    // Check latest stable Spring Boot version at:
+    // curl -s https://api.github.com/repos/spring-projects/spring-boot/releases | grep -o '"tag_name": "v[0-9.]*"' | head -20
+    id 'org.springframework.boot' version '3.5.3'
+
+    // Check latest stable dependency-management plugin version at:
+    // curl -s "https://repo1.maven.org/maven2/io/spring/gradle/dependency-management-plugin/maven-metadata.xml" | grep -o '<version>[0-9.]*</version>' | tail -1
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'eclipse'
+    id 'war'
+}
+
+group = 'com.ibm.cicsdev.springboot'
+version = '1.0.0'
+
+java
+{
+    toolchain
+    {
+        languageVersion = JavaLanguageVersion.of(java_version)
+    }
+}
+
+war
+{
+    archiveFileName = 'cics-java-liberty-springboot-jdbc-multi.war'
+}
+
+bootWar { enabled = false }
+
+eclipse
+{
+    classpath
+    {
+        downloadJavadoc = true
+    }
+    // Ensures Gradle Refresh sets the WTP context-root and web facet version correctly.
+    wtp
+    {
+        facet
+        {
+            facet name: 'jst.web', version: '6.0'
+        }
+        component
+        {
+            contextPath = 'cics-java-liberty-springboot-jdbc-multi'
+        }
+    }
+}
+
+repositories
+{
+    mavenCentral()
+}
+
+dependencies
+{
+    // CICS TS BOM — version sourced from gradle.properties as cics.bom.version
+    compileOnly enforcedPlatform("com.ibm.cics:com.ibm.cics.ts.bom:${project.property('cics.bom.version')}")
+
+    implementation('org.springframework.boot:spring-boot-starter-web')
+
+    // Spring JDBC Support
+    implementation('org.springframework.boot:spring-boot-starter-data-jdbc')
+
+    // Exclude only Tomcat embed jars — Liberty provides the servlet container
+    providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+}

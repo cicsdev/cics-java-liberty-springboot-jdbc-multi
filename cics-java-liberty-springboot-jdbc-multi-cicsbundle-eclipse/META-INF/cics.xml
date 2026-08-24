@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<manifest xmlns="http://www.ibm.com/xmlns/prod/cics/bundle"
+          bundleMajorVer="1" bundleMinorVer="0" bundleMicroVer="0"
+          bundleRelease="0" bundleVersion="1"
+          id="cics-java-liberty-springboot-jdbc-multi-bundle">
+    <define name="cics-java-liberty-springboot-jdbc-multi-app"
+            path="cics-java-liberty-springboot-jdbc-multi-app.warbundle"
+            type="http://www.ibm.com/xmlns/prod/cics/bundle/WARBUNDLE"/>
+</manifest>

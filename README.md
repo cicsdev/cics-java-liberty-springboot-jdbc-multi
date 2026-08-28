@@ -31,7 +31,7 @@ This sample demonstrates a Spring Boot JDBC application that connects to IBM Db2
 - CICS TS V6.1 or later
 - A configured Liberty JVM server in CICS
 - Java SE 17 or later on the workstation
-- IBM Db2 V12 or later on z/OS with the `EMP` sample table
+- IBM Db2 for z/OS V13 or later with the `EMP` sample table
 - A CICS DB2CONN resource installed and connected (for type 2 connectivity)
 - Either Gradle or Apache Maven on the workstation (optional — wrappers are provided)
 - Eclipse with IBM CICS Explorer SDK (optional — for Eclipse import and bundle export)
@@ -54,11 +54,11 @@ Add the following features to your Liberty `server.xml`:
 <featureManager>
     <feature>servlet-6.0</feature>
     <feature>jdbc-4.3</feature>
-    <feature>transaction-1.2</feature>
-    <feature>cicsts:core-1.0</feature>
-    <feature>cicsts:security-1.0</feature>
+    <feature>transportSecurity-1.0</feature>
 </featureManager>
 ```
+
+> **Note:** `cicsts:core-1.0` (and the `transaction-2.0` it provides) is automatically injected by CICS in integrated Liberty mode — you do not need to add it.
 
 Add two `dataSource` definitions — one for type 2 and one for type 4 connectivity. A sample `server.xml` is provided in [`etc/config/liberty/server.xml`](etc/config/liberty/server.xml). Substitute your Db2 connection details before deploying.
 

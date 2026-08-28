@@ -2,26 +2,19 @@
 <server description="CICS Liberty sample configuration">
 
     <featureManager>
-        <!-- Jakarta EE 10 servlet container — required for Spring Boot 3.x -->
         <feature>servlet-6.0</feature>
-        <!-- JDBC support for Db2 type 2 and type 4 connectivity -->
         <feature>jdbc-4.3</feature>
-        <!-- JTA global transactions — used by @Transactional endpoints in this sample -->
-        <feature>transaction-1.2</feature>
-        <!-- TLS transport security -->
         <feature>transportSecurity-1.0</feature>
-        <!-- CICS core integration — auto-injected, listed here for documentation -->
-        <feature>cicsts:core-1.0</feature>
-        <!-- CICS security — remove if your region has security disabled -->
-        <feature>cicsts:security-1.0</feature>
     </featureManager>
 
-    <!-- JDBC type 2 connectivity via CICS DB2CONN resource -->
-    <dataSource id="t2_multi" jndiName="jdbc/t2DataSource" transactional="false">
+    <!-- JDBC type 2 connectivity via CICS DB2CONN resource.
+         type="javax.sql.DataSource" is required — Liberty defaults to XADataSource
+         which Db2 T2 does not support (DSRA7015E). -->
+    <dataSource id="t2_multi" jndiName="jdbc/t2DataSource" transactional="false" type="javax.sql.DataSource">
         <jdbcDriver>
             <library name="DB2LIB">
-                <fileset dir="/usr/lpp/db2v12/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
-                <fileset dir="/usr/lpp/db2v12/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
+                <fileset dir="/usr/lpp/db2v13/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
+                <fileset dir="/usr/lpp/db2v13/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
             </library>
         </jdbcDriver>
         <properties.db2.jcc currentSchema="YOUR_SCHEMA" driverType="2"/>
@@ -32,8 +25,8 @@
     <dataSource id="t4_multi" jndiName="jdbc/t4DataSource" type="javax.sql.XADataSource">
         <jdbcDriver>
             <library name="DB2LIB">
-                <fileset dir="/usr/lpp/db2v12/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
-                <fileset dir="/usr/lpp/db2v12/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
+                <fileset dir="/usr/lpp/db2v13/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
+                <fileset dir="/usr/lpp/db2v13/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
             </library>
         </jdbcDriver>
         <properties.db2.jcc
@@ -45,86 +38,5 @@
             user="YOUR_USER"
             password="YOUR_PASSWORD"/>
     </dataSource>
-
-    <!-- Default HTTP End Point -->
-    <httpEndpoint host="*" httpPort="10201" httpsPort="10202" id="defaultHttpEndpoint">
-        <!-- Increase server security with the OWASP recommended HTTP headers.
-             These should be configured further to meet the security needs of
-             your web applications, especially the Content-Security-Policy
-             (CSP) header. -->
-        <headers>
-            <setIfMissing>Content-Security-Policy</setIfMissing>
-            <setIfMissing>Referrer-Policy: strict-origin-when-cross-origin</setIfMissing>
-            <setIfMissing>X-Content-Type-Options: nosniff</setIfMissing>
-            <setIfMissing>X-Frame-Options: DENY</setIfMissing>
-        </headers>
-    </httpEndpoint>
-
-    <!-- Provide more secure cookie defaults -->
-    <httpSession cookieHttpOnly="true" cookieSecure="true"/>
-
-    <!-- Provide more secure application defaults -->
-    <webAppSecurity httpOnlyCookies="true" ssoRequiresSSL="true"/>
-
-    <!-- Caution: Add Strict Transport Security (HSTS)
-         HSTS prevents protocol downgrade and SSL stripping attacks. If used,
-         it should be applied consistently across your entire domain. -->
-    <webContainer addStrictTransportSecurityHeader="max-age=31536000"/>
-
-    <!-- Add a more balanced security session timeout (default is 120 mins).
-         From Liberty 25.0.0.12 an LTPA password is required. -->
-    <ltpa expiration="60m" keysPassword="xRrwus9V77Q$dgnvd^MD7LSKpaB9p@jf"/>
-
-    <!-- Session inactivity timeout - per user (default is 30 mins) -->
-    <httpSession invalidationTimeout="15m"/>
-
-    <!-- Controls how often server.xml is scanned for updates.
-         Use "polled" when deploying via CICS Bundles (WAR bundlepart). -->
-    <config monitorInterval="5s" updateTrigger="polled"/>
-
-    <!-- Maximum time the server waits for applications to start -->
-    <applicationManager startTimeout="60s"/>
-
-    <!-- Disable dropins — use CICS Bundles for application deployment -->
-    <applicationMonitor dropins="dropins" dropinsEnabled="false" pollingRate="5s" updateTrigger="disabled"/>
-
-    <!-- Disable implicit CDI bean archive scanning to reduce startup time -->
-    <cdi enableImplicitBeanArchives="false"/>
-
-    <!-- MQ JMS resource adapter location (Jakarta EE 10 / MQ V9.4) -->
-    <!--  <variable name="wmqJmsClient.rar.location" value="/usr/lpp/mqm/V9R4M4/java/lib/jca/wmq.jakarta.jmsra.rar"/> -->
-
-    <!-- Managed Executor Service for JMS -->
-    <managedExecutorService jndiName="java:comp/DefaultManagedExecutorService"/>
-
-    <!-- WAS JMS Endpoint -->
-    <wasJmsEndpoint host="winmvs2d.hursley.ibm.com" id="defaultWasEndpoint" wasJmsPort="10202" wasJmsSSLPort="10203"/>
-
-    <!-- JMS MQ Connection Factory -->
-    <jmsConnectionFactory connectionManagerRef="ConMgr" id="jms/cf" jndiName="jms/cf">
-        <properties.wmqJms channel="JATP.CHANNEL" hostname="winmvs2d.hursley.ibm.com" port="10204" queueManager="JQ33" transportType="CLIENT"/>
-    </jmsConnectionFactory>
-
-    <!-- Connection Manager -->
-    <connectionManager id="ConMgr" maxPoolSize="10" minPoolSize="0"/>
-
-    <!-- Application element — only needed for direct WAR deployment.
-         When deploying via a CICS bundle, CICS auto-injects this element. -->
-    <application id="cics-java-liberty-springboot-jdbc-multi"
-                 location="${server.config.dir}/springapps/cics-java-liberty-springboot-jdbc-multi.war"
-                 name="cics-java-liberty-springboot-jdbc-multi"
-                 type="war">
-        <application-bnd>
-            <security-role name="cicsAllAuthenticated">
-                <special-subject type="ALL_AUTHENTICATED_USERS"/>
-            </security-role>
-        </application-bnd>
-    </application>
-
-    <include id="cics_auto" location="${server.config.dir}/installedApps.xml" onConflict="IGNORE"/>
-    <safRegistry enableFailover="false" id="saf"/>
-    <keyStore id="defaultKeyStore" password="defaultPassword"/>
-    <ssl clientAuthenticationSupported="true" id="defaultSSLConfig" keyStoreRef="defaultKeyStore" sslProtocol="TLSv1.3,TLSv1.2"/>
-    <executor coreThreads="8" id="allowCICSconfigure" maxThreads="15"/>
 
 </server>

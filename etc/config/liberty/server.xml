@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<server description="CICS Liberty sample configuration">
+
+    <featureManager>
+        <feature>servlet-6.0</feature>
+        <feature>jdbc-4.3</feature>
+        <feature>transportSecurity-1.0</feature>
+    </featureManager>
+
+    <!-- JDBC type 2 connectivity via CICS DB2CONN resource.
+         type="javax.sql.DataSource" is required — Liberty defaults to XADataSource
+         which Db2 T2 does not support (DSRA7015E). -->
+    <dataSource id="t2_multi" jndiName="jdbc/t2DataSource" transactional="false" type="javax.sql.DataSource">
+        <jdbcDriver>
+            <library name="DB2LIB">
+                <fileset dir="/usr/lpp/db2v13/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
+                <fileset dir="/usr/lpp/db2v13/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
+            </library>
+        </jdbcDriver>
+        <properties.db2.jcc currentSchema="YOUR_SCHEMA" driverType="2"/>
+        <connectionManager agedTimeout="0"/>
+    </dataSource>
+
+    <!-- JDBC type 4 connectivity via TCP/IP — substitute your Db2 connection details -->
+    <dataSource id="t4_multi" jndiName="jdbc/t4DataSource" type="javax.sql.XADataSource">
+        <jdbcDriver>
+            <library name="DB2LIB">
+                <fileset dir="/usr/lpp/db2v13/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
+                <fileset dir="/usr/lpp/db2v13/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
+            </library>
+        </jdbcDriver>
+        <properties.db2.jcc
+            driverType="4"
+            serverName="YOUR.SERVER.CORPORATION.COM"
+            portNumber="YOUR_PORT_NUMBER"
+            currentSchema="YOUR_SCHEMA"
+            databaseName="YOUR_DATABASE"
+            user="YOUR_USER"
+            password="YOUR_PASSWORD"/>
+    </dataSource>
+
+</server>

@@ -1,208 +1,195 @@
 # cics-java-liberty-springboot-jdbc-multi
 
-This project demonstrates a Spring Boot JDBC application using multiple DataSources that can be deployed to a CICS Liberty JVM server. The application makes use of the employee sample table supplied with Db2 for z/OS. The application allows you to add, update, delete or display employee information from the table EMP under different DataSources (type 2 connectivity or type 4 connectivity). The sample provides a set of Gradle and Maven build files for use either in Eclipse or standalone build environments.
+[![Build](https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi/actions/workflows/build.yaml/badge.svg)](https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi/actions/workflows/build.yaml)
+[![License](https://img.shields.io/badge/License-EPL%202.0-green.svg)](https://www.eclipse.org/legal/epl-2.0/)
 
-## Requirements
+## Overview
 
-* CICS TS V5.3 or later
-* A configured Liberty JVM server
-* Java SE 1.8 or later on the workstation
-* IBM Db2 V12 or later on z/OS
-* An Eclipse development environment on the workstation (optional)
-* Either Gradle or Apache Maven on the workstation (optional if using Wrappers)
+This sample demonstrates a Spring Boot JDBC application that connects to IBM Db2 for z/OS using **two simultaneous DataSources** — one using JDBC type 2 (native z/OS) connectivity, and one using JDBC type 4 (TCP/IP) connectivity. The application is deployed to a CICS Liberty JVM server and uses the Db2 employee sample table (`EMP`).
+
+**Key Features:**
+- Multiple Spring `DataSource` beans wired via JNDI from Liberty `server.xml`
+- REST endpoints routed by connection type (`/type2/...` and `/type4/...`)
+- Global (XA) transaction support via Spring `@Transactional` — coordinates CICS UOW with Db2
+- Full CRUD operations: list, add, update, delete employees
+- Supports CICS Bundle Plugin deployment (Gradle and Maven) and direct WAR deployment
+
+## Table of Contents
+1. [Prerequisites](#prerequisites)
+2. [Downloading](#downloading)
+3. [Check dependencies](#check-dependencies)
+4. [Building the Sample](#building-the-sample)
+5. [Deploying to a CICS Liberty JVM server](#deploying-to-a-cics-liberty-jvm-server)
+6. [Running the Sample](#running-the-sample)
+7. [Troubleshooting](#troubleshooting)
+8. [License](#license)
+9. [Additional Resources](#additional-resources)
+10. [Contributing](#contributing)
+
+## Prerequisites
+
+- CICS TS V6.1 or later
+- A configured Liberty JVM server in CICS
+- Java SE 17 or later on the workstation
+- IBM Db2 for z/OS V13 or later with the `EMP` sample table
+- A CICS DB2CONN resource installed and connected (for type 2 connectivity)
+- Either Gradle or Apache Maven on the workstation (optional — wrappers are provided)
+- Eclipse with IBM CICS Explorer SDK (optional — for Eclipse import and bundle export)
 
 ## Downloading
-* Clone the repository using your IDE's support, such as the Eclipse Git plugin
-* **or**, download the sample as a ZIP and unzip onto the workstation
 
->*Tip: Eclipse Git provides an 'Import existing Projects' check-box when cloning a repository.*
-
-## Building
-
-You can build the sample using an IDE of your choice, or you can build it from the command line. For both approaches, using the supplied Gradle or Maven wrapper is the recommended way to get a consistent version of build tooling.
-
-On the command line, you simply swap the Gradle or Maven command for the wrapper equivalent, `gradlew` or `mvnw` respectively.
-
-For an IDE, taking Eclipse as an example, the plug-ins for Gradle *buildship* and Maven *m2e* will integrate with the "Run As..." capability, allowing you to specify whether you want to build the project with a Wrapper, or a specific version of your chosen build tool.
-
-The required build-tasks are typically `clean bootWar` for Gradle and `clean package` for Maven. Once run, Gradle will generate a WAR file in the `build/libs` directory, while Maven will generate it in the `target` directory.
-
-**Note:** When building a WAR file for deployment to Liberty it is good practice to exclude Tomcat from the final runtime artifact. We demonstrate this in build.gradle with the *providedRuntime()* dependency, and in the pom.xml with the *provided* scope.
-
-**Note:** If you import the project to your IDE, you might experience local project compile errors. To resolve these errors you should run a tooling refresh on that project.
-For example, in Eclipse: 
-* for Gradle, right-click on "Project", select "Gradle -> Refresh Gradle Project", 
-* for Maven, right-click on "Project", select "Maven -> Update Project...".
-
-> Tip: *In Eclipse, Gradle (buildship) is able to fully refresh and resolve the local classpath even if the project was previously updated by Maven. However, Maven (m2e) does not currently reciprocate that capability. If you previously refreshed the project with Gradle, you'll need to manually remove the 'Project Dependencies' entry on the Java build-path of your Project Properties to avoid duplication errors when performing a Maven Project Update.*
-
-#### Gradle Wrapper (command line)
-
-Run the following in a local command prompt:
-
-On Linux or Mac:
+Clone the repository using your IDE's Git support, or download as a ZIP:
 
 ```shell
-./gradlew clean bootWar
+git clone https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi.git
 ```
-On Windows:
+
+> **Tip:** Eclipse Git provides an **Import existing Projects** checkbox when cloning a repository.
+
+## Check dependencies
+
+Add the following features to your Liberty `server.xml`:
+
+```xml
+<featureManager>
+    <feature>servlet-6.0</feature>
+    <feature>jdbc-4.3</feature>
+    <feature>transportSecurity-1.0</feature>
+</featureManager>
+```
+
+> **Note:** `cicsts:core-1.0` (and the `transaction-2.0` it provides) is automatically injected by CICS in integrated Liberty mode — you do not need to add it.
+
+Add two `dataSource` definitions — one for type 2 and one for type 4 connectivity. A sample `server.xml` is provided in [`etc/config/liberty/server.xml`](etc/config/liberty/server.xml). Substitute your Db2 connection details before deploying.
+
+## Building the Sample
+
+You can build using Gradle or Maven from the command line, or using Eclipse.
+
+### Gradle Wrapper
 
 ```shell
-gradlew.bat clean bootWar
+./gradlew clean build
 ```
 
-This creates a WAR file in the `build/libs` directory.
-
-#### Maven Wrapper (command line)
-
-
-Run the following in a local command prompt:
-
-On Linux or Mac:
+### Maven Wrapper
 
 ```shell
-./mvnw clean package
+./mvnw clean verify
 ```
 
-On Windows:
+The WAR file is produced at:
+- Gradle: `cics-java-liberty-springboot-jdbc-multi-app/build/libs/cics-java-liberty-springboot-jdbc-multi.war`
+- Maven: `cics-java-liberty-springboot-jdbc-multi-app/target/cics-java-liberty-springboot-jdbc-multi.war`
+
+### Eclipse import
+
+1. **Git Repositories** view → right-click Working Tree → **Import Projects** (imports root)
+2. Switch to **Java EE** perspective
+3. Right-click `cics-java-liberty-springboot-jdbc-multi-app` → **Import Projects**
+4. Right-click `cics-java-liberty-springboot-jdbc-multi-cicsbundle` → **Import Projects**
+5. Right-click `cics-java-liberty-springboot-jdbc-multi-cicsbundle-eclipse` → **Import Projects**
+6. Right-click root project → **Gradle → Refresh Gradle Project** (or **Maven → Update Project**)
+
+> **Note:** If you see compile errors after import, run a Gradle Refresh or Maven Update — this resolves the Spring Boot dependencies on the classpath.
+
+## Deploying to a CICS Liberty JVM server
+
+### CICS Bundle Plugin Deployment (Gradle/Maven)
+
+Build the CICS bundle ZIP using the CICS Bundle Plugin:
 
 ```shell
-mvnw.cmd clean package
+./gradlew clean build
+./mvnw clean verify
 ```
 
-This creates a WAR file in the `target` directory.
+The bundle ZIP is produced at:
+- Gradle: `cics-java-liberty-springboot-jdbc-multi-cicsbundle/build/distributions/cics-java-liberty-springboot-jdbc-multi-cicsbundle-1.0.0.zip`
+- Maven: `cics-java-liberty-springboot-jdbc-multi-cicsbundle/target/cics-java-liberty-springboot-jdbc-multi-cicsbundle-1.0.0.zip`
 
-## Deploying to a CICS Liberty JVM Server
+Upload the ZIP to zFS and define a CICS BUNDLE resource pointing to the extracted directory.
 
-- Ensure you have the following features defined in your Liberty `server.xml`:           
-    - `<servlet-3.1>` or `<servlet-4.0>` depending on the version of Java EE in use.  
-    - `<cicsts:security-1.0>` if CICS security is enabled.
-    - `<jsp-2.3>`
-    - `<jdbc-4.0>` or `<jdbc-4.1>`
+### CICS Explorer SDK Deployment
 
->**Note:** `servlet-4.0` will only work for CICS TS V5.5 or later
+1. In Eclipse, import all projects as described in [Building the Sample](#building-the-sample)
+2. Right-click `cics-java-liberty-springboot-jdbc-multi-cicsbundle-eclipse` → **Export Bundle Project to z/OS UNIX File System**
+3. Follow the wizard to transfer the bundle to your z/OS system
+4. Install and enable the CICS BUNDLE resource
 
-- add the dataSource definitions to 'server.xml'.
+### Direct Liberty Application Deployment
 
-E.g. JDBC type 2 connectivity (substitute your values as necessary):
+1. Build the WAR using Gradle or Maven as above
+2. Upload `cics-java-liberty-springboot-jdbc-multi.war` to a directory on zFS (e.g. `${server.config.dir}/springapps/`)
+3. Add the following `<application>` element to your Liberty `server.xml`:
 
-``` XML
-<dataSource id="t2_multi" jndiName="jdbc/t2DataSource" transactional="false">
-        <jdbcDriver>   
-            <library name="DB2LIB">
-                <fileset dir="/usr/lpp/db2v12/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
-                <fileset dir="/usr/lpp/db2v12/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
-            </library>
-        </jdbcDriver>
-        <properties.db2.jcc currentSchema="YOUR_SCHEMA" driverType="2"/>
-        <connectionManager agedTimeout="0"/>
-</dataSource>
-```        
-
-...and for JDBC type 4 connectivity (substitute your values as necessary):
-
-``` XML
-<dataSource id="t4_multi" jndiName="jdbc/t4DataSource" type="javax.sql.XADataSource">
-    <jdbcDriver>   
-        <library name="DB2LIB">
-            <fileset dir="/usr/lpp/db2v12/jdbc/classes" includes="db2jcc4.jar db2jcc_license_cisuz.jar"/>
-            <fileset dir="/usr/lpp/db2v12/jdbc/lib" includes="libdb2jcct2zos4_64.so"/>
-        </library>
-    </jdbcDriver>
-    <properties.db2.jcc driverType="4" 
-        serverName="YOUR.SERVER.CORPORATION.COM"   
-        portNumber="YOUR_PORT_NUMBER" 
-        currentSchema="YOUR_SCHEMA"       
-        databaseName="YOUR_DATABASE" 
-        user="USER"
-        password="PASSWORD"               
-    />     
-</dataSource>        
-```
-
-- Deployment option 1:
-    - Copy and paste the built WAR from your *target* or *build/libs* directory into a Eclipse CICS bundle project and create a new WAR bundlepart that references the WAR file. Then deploy the CICS bundle project from CICS Explorer using the **Export Bundle Project to z/OS UNIX File System** wizard.
-    
-   
-- Deployment option 2:
-    - Manually upload the WAR file to zFS and add an `<application>` element to the Liberty server.xml to define the web application with access to all authenticated users. For example the following application element can be used to install a WAR, and grant access to all authenticated users if security is enabled.
- 
-``` XML
-   <application id="com.ibm.cicsdev.springboot.jdbc.multi-0.1.0"  
-     location="${server.config.dir}/springapps/com.ibm.cicsdev.springboot.jdbc.multi-0.1.0.war"  
-     name="com.ibm.cicsdev.springboot.jdbc.multi-0.1.0" type="war">
-     <application-bnd>
+```xml
+<application id="cics-java-liberty-springboot-jdbc-multi"
+             location="${server.config.dir}/springapps/cics-java-liberty-springboot-jdbc-multi.war"
+             name="cics-java-liberty-springboot-jdbc-multi"
+             type="war">
+    <application-bnd>
         <security-role name="cicsAllAuthenticated">
             <special-subject type="ALL_AUTHENTICATED_USERS"/>
         </security-role>
-     </application-bnd>  
-   </application>
+    </application-bnd>
+</application>
 ```
 
-## Trying out the sample
+4. Also add the two `dataSource` definitions from [`etc/config/liberty/server.xml`](etc/config/liberty/server.xml) with your Db2 connection details
 
-1. Ensure you have a CICS DB2CONN resource installed and connected to your Db2 database. This resource is used by the DataSource configured for type 2 connectivity.
+## Running the Sample
 
-2. Ensure the web application started successfully in Liberty by checking for msg `CWWKT0016I` in the Liberty messages.log:
-    - `A CWWKT0016I: Web application available (default_host): http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc-multi-0.1.0`
-    - `I SRVE0292I: Servlet Message - [com.ibm.cicsdev.springboot.jcics.multi-0.1.0]:.Initializing Spring embedded WebApplicationContext`
+Verify the application started successfully by checking for message `CWWKT0016I` in `messages.log`:
 
-3. Copy the context root from message CWWKT0016I along with the REST service suffix into you web browser. For example to display all the Employees from the EMP table using the DataSource with type 2 connectivity:
-    - `http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc.multi-0.1.0/type2/allEmployees` 
-
-   The browser will prompt for basic authentication. Enter a valid userid and password - according to the configured registry for your target Liberty JVM server.
-   
-4. For more information on how to use this sample, request the context root:
-   - `http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc.multi-0.1.0/`
-     
-    
-## Using Multiple data sources
-
-Note that to facilitate Autowiring, the getDataSource() method and the getJdbcTemplate() methods must all be annotated to generate beans. The JdbcTemplate bean methods are then referenced in the EmployeeService and autowired to create the two templates used in this demo. 
-
-The URL path provided on each request dictates whether we wish to run our database query using the dataSource with type 2 connectivity, or the dataSource with type 4 connectivity. For example:
-
-- `http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc.multi-0.1.0/type4/addEmployee/Bertie/Banana` 
-
-- `http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc.multi-0.1.0/type2/addEmployee/Marvin/Mango` 
-
-
-
-## Additional notes on Transactional behaviour
-There are three types of Db2 dataSource definition that can be used in CICS Liberty, all use the same Db2 JDBC driver (JCC) but have slightly different transactional behaviours. They are as follows:
-- The original `cicsts_dataSource` using type 2 connectivity and a CICS DB2CONN resource.
-- A Liberty `dataSource` with type 2 connectivity and a CICS DB2CONN resource.
-- A Liberty `dataSource` with type 4 connectivity and using a remote TCP/IP connection managed by Liberty. 
-
-When using the default transactional scope of the CICS unit-of-work with a T2 Liberty JDBC connection you may notice that methods in the sample that perform database updates will rollback by default (and therefore also rollback the CICS UOW). This is because the JdbcTemplate **closes** connections after use. Closing a connection will cause the Liberty connection factory to *cleanup* outstanding requests **if** they are not autocommited or not in a global transaction. Since the default Liberty dataSource setting for the [`commitOrRollbackOnCleanup`](https://www.ibm.com/support/knowledgecenter/en/SS7K4U_liberty/com.ibm.websphere.liberty.autogen.zos.doc/ae/rwlp_config_dataSource.html) property is `rollback`, and autocommit is not supported for T2 connections in CICS, then requests to a T2 JDBC connection that use a Liberty dataSource will rollback by default.
-
-However, the same is not true of the cicsts_dataSource. It does not use the Liberty data source connection manager, so there is no opportunity for the Liberty cleanup behaviour to take effect. Instead it is the CICS UOW behaviour that is respected, which means an implicit commit at end of task.
-
-By default, commit behaviour is also exhibited by T4 JDBC connections. T4 JDBC connections default to `autocommit=true`, and each JDBC request will be auto-committed after use. This will not syncpoint the CICS UOW as T4 JDBC connections are not part of the CICS UOW by default.
-
-The following table summarises the different behaviours for each type of dataSource.
-
-
-|dataSource         |type     |autocommit    |autocommit default  |Default commit behaviour         |
-|-----------------  |---------|--------------|--------------------|---------------------------------|
-|cicsts_dataSource  |T2       |false         |false               |commit CICS UOW                  |
-|Liberty datasource |T2       |false         |false               |rollback CICS UOW                |
-|Liberty dataSource |T4       |true or false |true                |commit database update           |
-
-To avoid differences and provide consistent behaviour, a global transaction can be used to control the transactional scope of all updates. Our sample contains a set of transactional service endpoints, such as `/addEmployeeTx` that map to service methods that create a global transaction using the Spring `@Transactional` annotation, as shown below. This ensures all the work performed within the scope of that method is part of a single global transaction coordinated by Liberty. That work includes the CICS UOW, and any resources it controls, such as JDBC type 2 connections - as well as any requests to Liberty managed resources such as JDBC with type 4 connectivity.
-
-```java
-    @GetMapping("/addEmployeeTx/{firstName}/{lastName}")
-    @ResponseBody
-    @Transactional
-    public String addEmpTx(@PathVariable String firstName , @PathVariable String lastName) 
-    {
-        String result = employeeService.addEmployee(firstName,lastName);
-        return result;
-    }
+```
+CWWKT0016I: Web application available (default_host): http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc-multi
 ```
 
-You can observe the differences in behaviour by driving the different type2/type4 and local vs global transaction endpoints.
+Then access the root endpoint in your browser — it will prompt for basic authentication (use your RACF userid and password):
+
+```
+http://myzos.mycompany.com:httpPort/cics-java-liberty-springboot-jdbc-multi/
+```
+
+This returns a usage page listing all available endpoints. Example requests:
+
+| Operation | Type 2 (native z/OS) | Type 4 (TCP/IP) |
+|-----------|---------------------|-----------------|
+| List all employees | `/type2/allEmployees` | `/type4/allEmployees` |
+| List one employee | `/type2/listEmployee/{empno}` | `/type4/listEmployee/{empno}` |
+| Add employee | `/type2/addEmployee/{first}/{last}` | `/type4/addEmployee/{first}/{last}` |
+| Add (XA transaction) | `/type2/addEmployeeTx/{first}/{last}` | `/type4/addEmployeeTx/{first}/{last}` |
+| Delete employee | `/type2/deleteEmployee/{empNo}` | `/type4/deleteEmployee/{empNo}` |
+| Update salary | `/type2/updateEmployee/{empNo}/{salary}` | `/type4/updateEmployee/{empNo}/{salary}` |
+
+> **Note:** Ensure your CICS DB2CONN resource is installed and connected before testing type 2 endpoints.
+
+## Troubleshooting
+
+**Application fails to start — `CWWKZ0014W: application could not be found`**
+The `location` in `server.xml` does not match where you uploaded the WAR. Update the `location` attribute to the actual zFS path.
+
+**`JNDI lookup failed` for `jdbc/t2DataSource` or `jdbc/t4DataSource`**
+The `dataSource` definitions are missing from `server.xml`. Add both `dataSource` elements from [`etc/config/liberty/server.xml`](etc/config/liberty/server.xml) with your Db2 connection details.
+
+**Type 2 update operations roll back unexpectedly**
+This is expected behaviour — the Liberty connection manager rolls back T2 connections on close when not in a global transaction. Use the `...Tx` endpoints (e.g. `/type2/addEmployeeTx`) to wrap operations in a global XA transaction and get consistent commit behaviour across both DataSources.
+
+**`CWWKS9112W` or authentication errors**
+Ensure `cicsts:security-1.0` is in your `featureManager` and your RACF user has the `cicsAllAuthenticated` security role.
 
 ## License
-This project is licensed under [Eclipse Public License - v 2.0](LICENSE). 
+
+This project is licensed under the [Eclipse Public License - v 2.0](LICENSE).
+
+## Additional Resources
+
+- [CICS and JDBC documentation](https://www.ibm.com/docs/en/cics-ts/latest?topic=services-jdbc)
+- [Developing Spring Boot applications for CICS](https://www.ibm.com/docs/en/cics-ts/latest?topic=liberty-developing-spring-boot-applications)
+- [CICS Bundle Maven Plugin](https://github.com/IBM/cics-bundle-maven)
+- [CICS Bundle Gradle Plugin](https://github.com/IBM/cics-bundle-gradle)
+
+## Contributing
+
+This sample is maintained by IBM CICS development. We welcome bug reports and feature requests via GitHub Issues. Contributions are welcome and reviewed on a case-by-case basis — please read the [contributing guidelines](https://github.com/cicsdev/.github/blob/main/CONTRIBUTING.md) before opening a pull request. For CICS product questions, contact IBM Support.

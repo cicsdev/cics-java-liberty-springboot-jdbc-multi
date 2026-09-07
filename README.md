@@ -1,6 +1,6 @@
 # cics-java-liberty-springboot-jdbc-multi
 
-[![Build](https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi/actions/workflows/build.yaml/badge.svg)](https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi/actions/workflows/build.yaml)
+[![Build](https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi/actions/workflows/build.yaml/badge.svg?branch=main)](https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi/actions/workflows/build.yaml)
 [![License](https://img.shields.io/badge/License-EPL%202.0-green.svg)](https://www.eclipse.org/legal/epl-2.0/)
 
 ## Overview
@@ -15,16 +15,17 @@ This sample demonstrates a Spring Boot JDBC application that connects to IBM Db2
 - Supports CICS Bundle Plugin deployment (Gradle and Maven) and direct WAR deployment
 
 ## Table of Contents
-1. [Prerequisites](#prerequisites)
-2. [Downloading](#downloading)
-3. [Check dependencies](#check-dependencies)
-4. [Building the Sample](#building-the-sample)
-5. [Deploying to a CICS Liberty JVM server](#deploying-to-a-cics-liberty-jvm-server)
-6. [Running the Sample](#running-the-sample)
-7. [Troubleshooting](#troubleshooting)
-8. [License](#license)
-9. [Additional Resources](#additional-resources)
-10. [Contributing](#contributing)
+1. [Overview](#overview)
+2. [Prerequisites](#prerequisites)
+3. [Downloading](#downloading)
+4. [Check dependencies](#check-dependencies)
+5. [Building the Sample](#building-the-sample)
+6. [Deploying to a CICS Liberty JVM server](#deploying-to-a-cics-liberty-jvm-server)
+7. [Running the Sample](#running-the-sample)
+8. [Troubleshooting](#troubleshooting)
+9. [License](#license)
+10. [Additional Resources](#additional-resources)
+11. [Contributing](#contributing)
 
 ## Prerequisites
 

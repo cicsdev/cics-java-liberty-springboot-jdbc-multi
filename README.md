@@ -1,7 +1,20 @@
 # cics-java-liberty-springboot-jdbc-multi
 
-[![Build](https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi/actions/workflows/build.yaml/badge.svg?branch=springboot%2Fv3)](https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi/actions/workflows/build.yaml)
+[![Build](https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi/actions/workflows/build.yaml/badge.svg?branch=springboot%2Fv4)](https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi/actions/workflows/build.yaml)
 [![License](https://img.shields.io/badge/License-EPL%202.0-green.svg)](https://www.eclipse.org/legal/epl-2.0/)
+
+> **Version note:** This branch targets Spring Boot 4.x (Jakarta EE 11, Java 21+).
+> For Spring Boot 3.x see the [springboot/v3](../../tree/springboot/v3) branch.
+
+> **Pre-publish actions required:**
+> 1. **CICS Explorer SDK classpath entry** in
+>    `cics-java-liberty-springboot-jdbc-multi-app/.classpath` references
+>    `JE.JEE_V11_R0` (Jakarta EE 11). This token is not yet present in CICS Explorer
+>    SDK. Once the SDK ships Jakarta EE 11 support, verify the entry resolves correctly.
+> 2. **`web.xml` descriptor version** is temporarily set to `6.0` (Servlet 6.0 XSD)
+>    because WTP does not yet recognise `version="6.1"` and throws an error on project
+>    refresh. Once WTP supports Servlet 6.1, update `web.xml` to use
+>    `web-app_6_1.xsd` and `version="6.1"`, and remove this notice.
 
 ## Overview
 
@@ -29,9 +42,9 @@ This sample demonstrates a Spring Boot JDBC application that connects to IBM Db2
 
 ## Prerequisites
 
-- CICS TS V6.1 or later
+- CICS TS V6.1 or later (required for Spring Boot 4.x and Jakarta EE 11 support)
 - A configured Liberty JVM server in CICS
-- Java SE 17 or later on the workstation
+- Java SE 21 or later on the workstation
 - IBM Db2 for z/OS V13 or later with the `EMP` sample table
 - A CICS DB2CONN resource installed and connected (for type 2 connectivity)
 - Either Gradle or Apache Maven on the workstation (optional — wrappers are provided)
@@ -42,7 +55,7 @@ This sample demonstrates a Spring Boot JDBC application that connects to IBM Db2
 Clone the repository using your IDE's Git support, or download as a ZIP:
 
 ```shell
-git clone https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi.git
+git clone -b springboot/v4 https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi.git
 ```
 
 > **Tip:** Eclipse Git provides an **Import existing Projects** checkbox when cloning a repository.
@@ -53,7 +66,7 @@ Add the following features to your Liberty `server.xml`:
 
 ```xml
 <featureManager>
-    <feature>servlet-6.0</feature>
+    <feature>servlet-6.1</feature>
     <feature>jdbc-4.3</feature>
     <feature>transportSecurity-1.0</feature>
 </featureManager>

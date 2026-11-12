@@ -2,7 +2,7 @@
 <server description="CICS Liberty sample configuration">
 
     <featureManager>
-        <feature>servlet-6.0</feature>
+        <feature>servlet-6.1</feature>
         <feature>jdbc-4.3</feature>
         <feature>transportSecurity-1.0</feature>
     </featureManager>

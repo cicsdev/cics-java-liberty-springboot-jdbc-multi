@@ -26,16 +26,16 @@ gradle-app.setting
 *.zip
 *.tar.gz
 *.rar
+hs_err_pid*
+replay_pid*
 
 # Gradle wrapper — these exceptions MUST come after *.jar above.
 # Git applies the LAST matching rule, so an exception placed before *.jar is silently overridden.
 !gradle/wrapper/gradle-wrapper.jar
 !gradle/wrapper/gradle-wrapper.properties
-hs_err_pid*
-replay_pid*
 
 # Eclipse
-# CRITICAL: DO NOT ignore .project, .classpath, or .settings/
+# CRITICAL: For multi-module projects, DO NOT ignore .project, .classpath, or .settings/
 # These files MUST be committed for clean customer import experience
 .metadata
 bin/
@@ -52,10 +52,18 @@ local.properties
 .buildpath
 .target
 .tern-project
+.texlipse
 .springBeans
+.recommenders/
 .apt_generated/
 .apt_generated_test/
 .factorypath
+.c9/
+*.pydevproject
+.cproject
+.autotools
+.externalToolBuilders/
+.launches/
 
 # IntelliJ IDEA
 .idea/
@@ -63,15 +71,31 @@ local.properties
 *.iml
 *.ipr
 out/
+.idea_modules/
 
 # VS Code
 .vscode/
+*.code-workspace
+.history/
 
 # macOS
 .DS_Store
 .AppleDouble
+.LSOverride
+Icon
 ._*
 
 # Windows
 Thumbs.db
 ehthumbs.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*

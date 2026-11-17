@@ -40,17 +40,7 @@ This sample demonstrates a Spring Boot JDBC application that connects to IBM Db2
 - Either Gradle or Apache Maven on the workstation (optional — wrappers are provided)
 - Eclipse with IBM CICS Explorer SDK (optional — for Eclipse import and bundle export)
 
-## Downloading
-
-Clone the repository using your IDE's Git support, or download as a ZIP:
-
-```shell
-git clone -b springboot/v4 https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi.git
-```
-
-> **Tip:** Eclipse Git provides an **Import existing Projects** checkbox when cloning a repository.
-
-## Check dependencies
+### Liberty server configuration
 
 Add the following features to your Liberty `server.xml`:
 
@@ -65,6 +55,38 @@ Add the following features to your Liberty `server.xml`:
 > **Note:** `cicsts:core-1.0` (and the `transaction-2.0` it provides) is automatically injected by CICS in integrated Liberty mode — you do not need to add it.
 
 Add two `dataSource` definitions — one for type 2 and one for type 4 connectivity. A sample `server.xml` is provided in [`etc/config/liberty/server.xml`](etc/config/liberty/server.xml). Substitute your Db2 connection details before deploying.
+
+## Downloading
+
+Clone the repository using your IDE's Git support, or download as a ZIP:
+
+```shell
+git clone -b springboot/v4 https://github.com/cicsdev/cics-java-liberty-springboot-jdbc-multi.git
+```
+
+> **Tip:** Eclipse Git provides an **Import existing Projects** checkbox when cloning a repository.
+
+### Check dependencies
+
+Before building this sample, verify that the correct CICS TS bill of materials (BOM) is specified for your target release of CICS. The BOM specifies a consistent set of artifacts and their scopes. The default version in this sample is compatible with CICS TS V6.1 with JCICS APAR PH63856 or newer — update it to match your CICS TS release.
+
+You can browse the published versions of the CICS BOM at [Maven Central](https://mvnrepository.com/artifact/com.ibm.cics/com.ibm.cics.ts.bom).
+
+The BOM version is defined once, as the `cics.bom.version` property, in `gradle.properties` (Gradle) and in the root `pom.xml` (Maven):
+
+Gradle (`gradle.properties`):
+
+```properties
+cics.bom.version=6.1-20250812133513-PH63856
+```
+
+Maven (`pom.xml`):
+
+```xml
+<properties>
+  <cics.bom.version>6.1-20250812133513-PH63856</cics.bom.version>
+</properties>
+```
 
 ## Building the Sample
 

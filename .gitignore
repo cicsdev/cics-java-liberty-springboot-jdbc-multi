@@ -14,8 +14,6 @@ buildNumber.properties
 **/build/
 .gradle
 gradle-app.setting
-!gradle-wrapper.jar
-!gradle-wrapper.properties
 .gradletasknamecache
 
 # Java
@@ -28,6 +26,11 @@ gradle-app.setting
 *.zip
 *.tar.gz
 *.rar
+
+# Gradle wrapper — these exceptions MUST come after *.jar above.
+# Git applies the LAST matching rule, so an exception placed before *.jar is silently overridden.
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 hs_err_pid*
 replay_pid*
 

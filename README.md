@@ -6,16 +6,6 @@
 > **Version note:** This branch targets Spring Boot 4.x (Jakarta EE 11, Java 21+).
 > For Spring Boot 3.x see the [springboot/v3](../../tree/springboot/v3) branch.
 
-> **Pre-publish actions required:**
-> 1. **CICS Explorer SDK classpath entry** in
->    `cics-java-liberty-springboot-jdbc-multi-app/.classpath` references
->    `JE.JEE_V11_R0` (Jakarta EE 11). This token is not yet present in CICS Explorer
->    SDK. Once the SDK ships Jakarta EE 11 support, verify the entry resolves correctly.
-> 2. **`web.xml` descriptor version** is temporarily set to `6.0` (Servlet 6.0 XSD)
->    because WTP does not yet recognise `version="6.1"` and throws an error on project
->    refresh. Once WTP supports Servlet 6.1, update `web.xml` to use
->    `web-app_6_1.xsd` and `version="6.1"`, and remove this notice.
-
 ## Overview
 
 This sample demonstrates a Spring Boot JDBC application that connects to IBM Db2 for z/OS using **two simultaneous DataSources** — one using JDBC type 2 (native z/OS) connectivity, and one using JDBC type 4 (TCP/IP) connectivity. The application is deployed to a CICS Liberty JVM server and uses the Db2 employee sample table (`EMP`).

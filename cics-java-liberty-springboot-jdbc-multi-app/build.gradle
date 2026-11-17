@@ -60,7 +60,7 @@ dependencies
     // CICS TS BOM — version sourced from gradle.properties as cics.bom.version
     compileOnly enforcedPlatform("com.ibm.cics:com.ibm.cics.ts.bom:${project.property('cics.bom.version')}")
 
-    implementation('org.springframework.boot:spring-boot-starter-web')
+    implementation('org.springframework.boot:spring-boot-starter-webmvc')
 
     // Spring JDBC Support
     implementation('org.springframework.boot:spring-boot-starter-data-jdbc')

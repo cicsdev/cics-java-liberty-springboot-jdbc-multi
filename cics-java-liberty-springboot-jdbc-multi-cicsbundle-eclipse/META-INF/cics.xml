@@ -4,6 +4,6 @@
           bundleRelease="0" bundleVersion="1"
           id="cics-java-liberty-springboot-jdbc-multi-bundle">
     <define name="cics-java-liberty-springboot-jdbc-multi-app"
-            path="cics-java-liberty-springboot-jdbc-multi-app.warbundle"
+            path="cics-java-liberty-springboot-jdbc-multi.warbundle"
             type="http://www.ibm.com/xmlns/prod/cics/bundle/WARBUNDLE"/>
 </manifest>
